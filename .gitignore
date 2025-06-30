@@ -1,0 +1,104 @@
+# Experimental Data Files
+# Protect sensitive experimental data
+*.txt
+*.dat
+*.mat
+*.xlsx
+*.csv
+Data_raw/
+Sessions/*/data/
+Sessions/*/backup/
+
+# MATLAB Files
+*.asv          # MATLAB autosave files
+*.m~           # MATLAB backup files
+slprj/         # Simulink cache
+
+# Python Cache and Temp Files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.cache/
+cache/
+
+# Output Files
+# Protect generated analysis outputs
+*.png
+*.pdf
+*.fig
+*.eps
+*.svg
+*.jpg
+*.jpeg
+reports/*.txt
+reports/*.pdf
+final_outputs/
+
+# Log Files
+*.log
+*.out
+*.err
+debug.txt
+timing.log
+
+# Temporary Files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+
+# OS Generated Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# IDE and Editor Files
+.vscode/
+.idea/
+*.sublime-*
+.atom/
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Configuration Files with Sensitive Data
+config_local.py
+secrets.yaml
+.env
+
+# Large Data Files
+*.h5
+*.hdf5
+*.pickle
+*.pkl
+
+# Backup Directories
+backup/
+backups/
+old/
+
+# Custom Analysis Outputs
+# (Keep structure but ignore content)
+organized/analysis/*.csv
+organized/analysis/*.txt
+organized/final_outputs/
+organized/reports/*.pdf
+
+# Exception: Keep important configuration and documentation
+!config.m
+!README.md
+!*.md
+!requirements.txt
+!setup.py
