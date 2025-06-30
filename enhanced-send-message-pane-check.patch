@@ -1,0 +1,37 @@
+# enhanced-send-message.sh用ペイン存在確認パッチ
+
+# このパッチをenhanced-send-message.shの300行目あたり（send_message関数内）に追加
+
+# ペイン存在確認関数
+check_pane_exists() {
+    local session=$1
+    local pane=$2
+    
+    # tmuxサーバー確認
+    if ! tmux list-sessions &>/dev/null; then
+        error_log "TMUXサーバーが応答しません"
+        return 1
+    fi
+    
+    # セッション存在確認
+    if ! tmux has-session -t "$session" 2>/dev/null; then
+        error_log "セッション '$session' が見つかりません"
+        return 1
+    fi
+    
+    # ペイン存在確認
+    local pane_index="${pane#*.}"
+    if ! tmux list-panes -t "$session" -F "#{pane_index}" 2>/dev/null | grep -q "^${pane_index}$"; then
+        error_log "ペイン '$session:$pane' が見つかりません"
+        return 1
+    fi
+    
+    return 0
+}
+
+# send_message関数内のtmux send-keys実行前に以下を追加:
+if ! check_pane_exists "$SESSION" "$PANE"; then
+    error_log "送信先ペインの確認に失敗しました: $AGENT"
+    record_error "PANE_NOT_FOUND"
+    exit 2
+fi
