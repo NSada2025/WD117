@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>矯正治療計画立案・評価システム - 詳細版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .image-card:hover { transform: scale(1.02); transition: transform 0.2s; }
+        .tooth-diagram { 
+            display: grid; 
+            grid-template-columns: repeat(16, 1fr); 
+            gap: 2px; 
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .tooth { 
+            aspect-ratio: 1; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tooth:hover { transform: scale(1.1); }
+        .tooth-upper { background-color: #fef3c7; border: 2px solid #f59e0b; }
+        .tooth-lower { background-color: #dbeafe; border: 2px solid #3b82f6; }
+        .tooth-moved { background-color: #fecaca; border-color: #ef4444; }
+        .timeline-item { position: relative; padding-left: 30px; }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e5e7eb;
+        }
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: 4px;
+            top: 8px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #3b82f6;
+            border: 2px solid white;
+        }
+        .measurement-line {
+            stroke: #ef4444;
+            stroke-width: 2;
+            marker-end: url(#arrowhead);
+        }
+        .photo-placeholder {
+            background: linear-gradient(135deg, #f3f4f6 25%, #e5e7eb 25%, #e5e7eb 50%, #f3f4f6 50%, #f3f4f6 75%, #e5e7eb 75%, #e5e7eb);
+            background-size: 20px 20px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Header -->
+    <div class="bg-white shadow-md p-4 sticky top-0 z-50">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">矯正治療計画立案・評価システム</h1>
+                <p class="text-gray-600">患者: 山田太郎 | 年齢: 25歳 | ID: 2024-001 | 主訴: 前歯の突出</p>
+            </div>
+            <div class="flex gap-2">
+                <button class="px-4 py-2 rounded bg-blue-500 text-white">グリッド表示</button>
+                <button class="px-4 py-2 rounded bg-gray-200">比較表示</button>
+                <button class="px-4 py-2 rounded bg-gray-200">タイムライン</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="bg-blue-50 p-4 border-b">
+        <div class="max-w-7xl mx-auto grid grid-cols-6 gap-4">
+            <div class="text-center">
+                <p class="text-sm text-gray-600">オーバージェット</p>
+                <p class="text-xl font-bold text-red-600">7.0mm</p>
+            </div>
+            <div class="text-center">
+                <p class="text-sm text-gray-600">オーバーバイト</p>
+                <p class="text-xl font-bold text-orange-600">6.0mm</p>
+            </div>
+            <div class="text-center">
+                <p class="text-sm text-gray-600">ANB角</p>
+                <p class="text-xl font-bold text-red-600">6.0°</p>
+            </div>
+            <div class="text-center">
+                <p class="text-sm text-gray-600">臼歯関係</p>
+                <p class="text-xl font-bold text-orange-600">Class II</p>
+            </div>
+            <div class="text-center">
+                <p class="text-sm text-gray-600">治療期間</p>
+                <p class="text-xl font-bold text-blue-600">24ヶ月</p>
+            </div>
+            <div class="text-center">
+                <p class="text-sm text-gray-600">進捗率</p>
+                <p class="text-xl font-bold text-green-600">8.3%</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="bg-white border-b sticky top-16 z-40">
+        <div class="flex overflow-x-auto">
+            <button onclick="showTab('images')" class="tab-btn px-6 py-3 font-medium border-b-2 border-blue-500 text-blue-600 whitespace-nowrap">画像</button>
+            <button onclick="showTab('analysis')" class="tab-btn px-6 py-3 font-medium text-gray-600 hover:text-gray-800 whitespace-nowrap">分析結果</button>
+            <button onclick="showTab('detailed-plan')" class="tab-btn px-6 py-3 font-medium text-gray-600 hover:text-gray-800 whitespace-nowrap">詳細治療計画</button>
+            <button onclick="showTab('tooth-movement')" class="tab-btn px-6 py-3 font-medium text-gray-600 hover:text-gray-800 whitespace-nowrap">歯牙移動計画</button>
+            <button onclick="showTab('timeline')" class="tab-btn px-6 py-3 font-medium text-gray-600 hover:text-gray-800 whitespace-nowrap">経過観察</button>
+            <button onclick="showTab('simulation')" class="tab-btn px-6 py-3 font-medium text-gray-600 hover:text-gray-800 whitespace-nowrap">予測シミュレーション</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 overflow-hidden">
+        <!-- Images Tab -->
+        <div id="images" class="tab-content active">
+            <div class="flex h-screen">
+                <div class="w-64 bg-gray-50 p-4 border-r overflow-y-auto">
+                    <h3 class="font-semibold mb-3">画像カテゴリー</h3>
+                    <div class="space-y-2 mb-6">
+                        <button class="w-full text-left px-3 py-2 rounded bg-blue-100 text-blue-700">
+                            <div class="flex justify-between items-center">
+                                <span>顔面写真</span>
+                                <span class="text-xs bg-blue-200 px-2 py-1 rounded">6枚</span>
+                            </div>
+                        </button>
+                        <button class="w-full text-left px-3 py-2 rounded hover:bg-gray-100">
+                            <div class="flex justify-between items-center">
+                                <span>パノラマX線</span>
+                                <span class="text-xs bg-gray-200 px-2 py-1 rounded">2枚</span>
+                            </div>
+                        </button>
+                        <button class="w-full text-left px-3 py-2 rounded hover:bg-gray-100">
+                            <div class="flex justify-between items-center">
+                                <span>セファロ</span>
+                                <span class="text-xs bg-gray-200 px-2 py-1 rounded">2枚</span>
+                            </div>
+                        </button>
+                        <button class="w-full text-left px-3 py-2 rounded hover:bg-gray-100">
+                            <div class="flex justify-between items-center">
+                                <span>口腔内写真</span>
+                                <span class="text-xs bg-gray-200 px-2 py-1 rounded">8枚</span>
+                            </div>
+                        </button>
+                        <button class="w-full text-left px-3 py-2 rounded hover:bg-gray-100">
+                            <div class="flex justify-between items-center">
+                                <span>模型写真</span>
+                                <span class="text-xs bg-gray-200 px-2 py-1 rounded">5枚</span>
+                            </div>
+                        </button>
+                    </div>
+                    
+                    <h3 class="font-semibold mb-3">撮影時期</h3>
+                    <select class="w-full p-2 border rounded mb-6">
+                        <option>初診時（2024年1月）</option>
+                        <option>1ヶ月後（2024年2月）</option>
+                        <option>2ヶ月後（2024年3月）</option>
+                    </select>
+                    
+                    <h3 class="font-semibold mb-3">表示設定</h3>
+                    <div class="space-y-2">
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" checked class="w-4 h-4">
+                            <span class="text-sm">測定値を表示</span>
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" checked class="w-4 h-4">
+                            <span class="text-sm">注釈を表示</span>
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" class="w-4 h-4">
+                            <span class="text-sm">グリッド線を表示</span>
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" class="w-4 h-4">
+                            <span class="text-sm">前回との比較</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="flex-1 p-6 overflow-y-auto">
+                    <div class="mb-4 flex justify-between items-center">
+                        <h2 class="text-xl font-semibold">顔面写真 - 初診時</h2>
+                        <div class="flex gap-2">
+                            <button class="px-3 py-1 text-sm bg-gray-200 rounded">一括ダウンロード</button>
+                            <button class="px-3 py-1 text-sm bg-gray-200 rounded">印刷</button>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-4">
+                        <!-- 正面写真 -->
+                        <div class="bg-white rounded-lg shadow overflow-hidden">
+                            <div class="photo-placeholder h-64 relative">
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <div class="text-center">
+                                        <svg class="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                        </svg>
+                                        <p class="mt-2 text-gray-500">正面顔貌</p>
+                                    </div>
+                                </div>
+                                <div class="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded text-xs">
+                                    初診時
+                                </div>
+                            </div>
+                            <div class="p-4">
+                                <h4 class="font-semibold">正面顔貌写真</h4>
+                                <p class="text-sm text-gray-600">E-line: -2mm（標準範囲内）</p>
+                                <p class="text-sm text-gray-600">顔面対称性: 良好</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 側面写真 -->
+                        <div class="bg-white rounded-lg shadow overflow-hidden">
+                            <div class="photo-placeholder h-64 relative">
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <div class="text-center">
+                                        <svg class="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                        </svg>
+                                        <p class="mt-2 text-gray-500">側面顔貌</p>
+                                    </div>
+                                </div>
+                                <svg class="absolute inset-0 w-full h-full opacity-30" viewBox="0 0 200 200">
+                                    <line x1="50" y1="80" x2="100" y2="100" stroke="red" stroke-width="2"/>
+                                    <line x1="100" y1="100" x2="90" y2="150" stroke="red" stroke-width="2"/>
+                                    <text x="110" y="90" fill="red" font-size="12">E-line</text>
+                                </svg>
+                            </div>
+                            <div class="p-4">
+                                <h4 class="font-semibold">側面顔貌写真</h4>
+                                <p class="text-sm text-gray-600">上唇突出度: +4mm</p>
+                                <p class="text-sm text-gray-600">下唇突出度: +2mm</p>
+                                <p class="text-sm text-red-600">軟組織側貌: Convex type</p>
+                            </div>
+                        </div>
+                        
+                        <!-- スマイル写真 -->
+                        <div class="bg-white rounded-lg shadow overflow-hidden">
+                            <div class="photo-placeholder h-64 relative">
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <div class="text-center">
+                                        <svg class="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <p class="mt-2 text-gray-500">スマイル</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4">
+                                <h4 class="font-semibold">スマイル写真</h4>
+                                <p class="text-sm text-gray-600">スマイルライン: 不整</p>
+                                <p class="text-sm text-gray-600">歯肉露出: 3mm（ガミースマイル）</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 口腔内写真セクション -->
+                    <h3 class="text-lg font-semibold mt-8 mb-4">口腔内写真</h3>
+                    <div class="grid grid-cols-5 gap-3">
+                        <div class="bg-white rounded shadow p-2">
+                            <div class="photo-placeholder h-32 flex items-center justify-center">
+                                <span class="text-xs text-gray-500">右側面</span>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded shadow p-2">
+                            <div class="photo-placeholder h-32 flex items-center justify-center">
+                                <span class="text-xs text-gray-500">右側45°</span>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded shadow p-2">
+                            <div class="photo-placeholder h-32 flex items-center justify-center">
+                                <span class="text-xs text-gray-500">正面</span>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded shadow p-2">
+                            <div class="photo-placeholder h-32 flex items-center justify-center">
+                                <span class="text-xs text-gray-500">左側45°</span>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded shadow p-2">
+                            <div class="photo-placeholder h-32 flex items-center justify-center">
+                                <span class="text-xs text-gray-500">左側面</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysis Tab -->
+        <div id="analysis" class="tab-content p-6">
+            <div class="max-w-7xl mx-auto">
+                <h2 class="text-2xl font-bold mb-6">総合分析結果</h2>
+                
+                <!-- 咬合分析サマリー -->
+                <div class="grid grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center">
+                            <span class="w-3 h-3 bg-red-500 rounded-full mr-2"></span>
+                            咬合重症度スコア
+                        </h3>
+                        <div class="text-center py-4">
+                            <div class="relative inline-block">
+                                <svg class="w-32 h-32">
+                                    <circle cx="64" cy="64" r="60" fill="none" stroke="#e5e7eb" stroke-width="8"/>
+                                    <circle cx="64" cy="64" r="60" fill="none" stroke="#ef4444" stroke-width="8"
+                                            stroke-dasharray="377" stroke-dashoffset="240" transform="rotate(-90 64 64)"/>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <div>
+                                        <p class="text-3xl font-bold">36.6</p>
+                                        <p class="text-sm text-gray-500">中等度</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span>軽度 (0-20)</span>
+                                <span class="text-gray-400">✗</span>
+                            </div>
+                            <div class="flex justify-between text-orange-600 font-semibold">
+                                <span>中等度 (20-50)</span>
+                                <span>✓</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>重度 (50-100)</span>
+                                <span class="text-gray-400">✗</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">優先改善項目</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-3 bg-red-50 rounded">
+                                <div>
+                                    <p class="font-medium">臼歯関係 (Class II)</p>
+                                    <p class="text-sm text-gray-600">右側: Full Class II, 左側: 1/2 Class II</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-2xl font-bold text-red-600">60.0</p>
+                                    <p class="text-xs text-gray-500">スコア</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-orange-50 rounded">
+                                <div>
+                                    <p class="font-medium">オーバージェット</p>
+                                    <p class="text-sm text-gray-600">7.0mm（標準: 2-3mm）</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-2xl font-bold text-orange-600">45.0</p>
+                                    <p class="text-xs text-gray-500">スコア</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-yellow-50 rounded">
+                                <div>
+                                    <p class="font-medium">オーバーバイト</p>
+                                    <p class="text-sm text-gray-600">6.0mm（標準: 2-3mm）</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-2xl font-bold text-yellow-600">30.0</p>
+                                    <p class="text-xs text-gray-500">スコア</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">セファロ分析主要値</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm">SNA</span>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-32 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-green-500 h-2 rounded-full" style="width: 65%"></div>
+                                    </div>
+                                    <span class="text-sm font-medium">82.0°</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm">SNB</span>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-32 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-yellow-500 h-2 rounded-full" style="width: 55%"></div>
+                                    </div>
+                                    <span class="text-sm font-medium">76.0°</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm">ANB</span>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-32 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-red-500 h-2 rounded-full" style="width: 85%"></div>
+                                    </div>
+                                    <span class="text-sm font-medium text-red-600">6.0°</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm">FMA</span>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-32 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-green-500 h-2 rounded-full" style="width: 50%"></div>
+                                    </div>
+                                    <span class="text-sm font-medium">25.0°</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm">IMPA</span>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-32 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-green-500 h-2 rounded-full" style="width: 70%"></div>
+                                    </div>
+                                    <span class="text-sm font-medium">95.0°</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm">U1-SN</span>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-32 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-orange-500 h-2 rounded-full" style="width: 80%"></div>
+                                    </div>
+                                    <span class="text-sm font-medium text-orange-600">110.0°</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 詳細分析グラフ -->
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">歯列弓形態分析</h3>
+                        <canvas id="archFormChart" width="400" height="300"></canvas>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">Bolton分析</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <p class="text-sm text-gray-600">前歯部比率</p>
+                                <div class="flex items-center gap-4">
+                                    <div class="flex-1">
+                                        <div class="bg-gray-200 rounded-full h-3">
+                                            <div class="bg-blue-500 h-3 rounded-full" style="width: 77.2%"></div>
+                                        </div>
+                                    </div>
+                                    <span class="font-medium">77.2%</span>
+                                    <span class="text-sm text-green-600">正常範囲</span>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">全歯部比率</p>
+                                <div class="flex items-center gap-4">
+                                    <div class="flex-1">
+                                        <div class="bg-gray-200 rounded-full h-3">
+                                            <div class="bg-orange-500 h-3 rounded-full" style="width: 93.5%"></div>
+                                        </div>
+                                    </div>
+                                    <span class="font-medium">93.5%</span>
+                                    <span class="text-sm text-orange-600">やや大きい</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Treatment Plan Tab -->
+        <div id="detailed-plan" class="tab-content p-6">
+            <div class="max-w-7xl mx-auto">
+                <h2 class="text-2xl font-bold mb-6">詳細治療計画</h2>
+                
+                <!-- 治療概要 -->
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
+                    <div class="grid grid-cols-4 gap-6">
+                        <div>
+                            <p class="text-sm text-gray-600">診断名</p>
+                            <p class="font-semibold">Angle Class II div.1 上顎前突症</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">治療方針</p>
+                            <p class="font-semibold">上顎小臼歯抜歯による前歯後退</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">使用装置</p>
+                            <p class="font-semibold">セラミックブラケット + Ni-Ti wire</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">予定期間</p>
+                            <p class="font-semibold">動的治療24ヶ月 + 保定2年</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- フェーズ別詳細計画 -->
+                <div class="space-y-6">
+                    <!-- Phase 1 -->
+                    <div class="bg-white rounded-lg shadow overflow-hidden">
+                        <div class="bg-blue-50 p-4 border-b">
+                            <h3 class="text-lg font-semibold flex items-center">
+                                <span class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center mr-3">1</span>
+                                Phase 1: レベリング・アライメント（0-4ヶ月）
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-2 gap-6">
+                                <div>
+                                    <h4 class="font-semibold mb-3">治療内容</h4>
+                                    <ul class="space-y-2 text-sm">
+                                        <li class="flex items-start">
+                                            <span class="text-blue-500 mr-2">•</span>
+                                            上下顎セラミックブラケット装着（.022"スロット）
+                                        </li>
+                                        <li class="flex items-start">
+                                            <span class="text-blue-500 mr-2">•</span>
+                                            初期ワイヤー: .014" Ni-Ti（超弾性）
+                                        </li>
+                                        <li class="flex items-start">
+                                            <span class="text-blue-500 mr-2">•</span>
+                                            叢生量: 上顎-4.5mm、下顎-2.0mm の解消
+                                        </li>
+                                        <li class="flex items-start">
+                                            <span class="text-blue-500 mr-2">•</span>
+                                            上顎第一小臼歯（14, 24）の抜歯（装着2週間後）
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold mb-3">ワイヤーシークエンス</h4>
+                                    <div class="space-y-2 text-sm">
+                                        <div class="flex justify-between p-2 bg-gray-50 rounded">
+                                            <span>0-6週</span>
+                                            <span class="font-mono">.014" Ni-Ti</span>
+                                        </div>
+                                        <div class="flex justify-between p-2 bg-gray-50 rounded">
+                                            <span>6-10週</span>
+                                            <span class="font-mono">.016" Ni-Ti</span>
+                                        </div>
+                                        <div class="flex justify-between p-2 bg-gray-50 rounded">
+                                            <span>10-16週</span>
+                                            <span class="font-mono">.016×.022" Ni-Ti</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4 p-4 bg-yellow-50 rounded">
+                                <p class="text-sm"><strong>注意事項:</strong> 初期の疼痛管理、口腔衛生指導の徹底。月1回の調整。</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Phase 2 -->
+                    <div class="bg-white rounded-lg shadow overflow-hidden">
+                        <div class="bg-blue-50 p-4 border-b">
+                            <h3 class="text-lg font-semibold flex items-center">
+                                <span class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center mr-3">2</span>
+                                Phase 2: 犬歯遠心移動（4-10ヶ月）
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-2 gap-6">
+                                <div>
+                                    <h4 class="font-semibold mb-3">治療内容</h4>
+                                    <ul class="space-y-2 text-sm">
+                                        <li class="flex items-start">
+                                            <span class="text-blue-500 mr-2">•</span>
+                                            上顎犬歯の遠心移動: 片側4.5mm（Power chain使用）
+                                        </li>
+                                        <li class="flex items-start">
+                                            <span class="text-blue-500 mr-2">•</span>
+                                            移動速度: 0.75-1.0mm/月を目標
+                                        </li>
+                                        <li class="flex items-start">
+                                            <span class="text-blue-500 mr-2">•</span>
+                                            アンカレッジコントロール: Nanceホールディングアーチ装着
+                                        </li>
+                                        <li class="flex items-start">
+                                            <span class="text-blue-500 mr-2">•</span>
+                                            下顎は整列維持（.016×.022" SS wire）
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold mb-3">力のコントロール</h4>
+                                    <div class="space-y-2 text-sm">
+                                        <div class="p-3 bg-gray-50 rounded">
+                                            <p class="font-medium">牽引力</p>
+                                            <p>150-200g/側（Power chain 3-4穴）</p>
+                                        </div>
+                                        <div class="p-3 bg-gray-50 rounded">
+                                            <p class="font-medium">ワイヤー</p>
+                                            <p>.016×.022" SS（上顎）</p>
+                                        </div>
+                                        <div class="p-3 bg-gray-50 rounded">
+                                            <p class="font-medium">調整頻度</p>
+                                            <p>3-4週毎（Power chain交換）</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Phase 3 -->
+                    <div class="bg-white rounded-lg shadow overflow-hidden">
+                        <div class="bg-blue-50 p-4 border-b">
+                            <h3 class="text-lg font-semibold flex items-center">
+                                <span class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center mr-3">3</span>
+                                Phase 3: 前歯後退（10-18ヶ月）
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-2 gap-6">
+                                <div>
+                                    <h4 class="font-semibold mb-3">治療目標と移動量</h4>
+                                    <ul class="space-y-2 text-sm">
+                                        <li class="flex items-start">
+                                            <span class="text-blue-500 mr-2">•</span>
+                                            <strong>上顎前歯後退量: 5.5mm</strong>（根尖部3.5mm、切端部7.0mm）
+                                        </li>
+                                        <li class="flex items-start">
+                                            <span class="text-blue-500 mr-2">•</span>
+                                            舌側傾斜: 15°（現在110° → 目標95°）
+                                        </li>
+                                        <li class="flex items-start">
+                                            <span class="text-blue-500 mr-2">•</span>
+                                            オーバージェット改善: 7mm → 2.5mm
+                                        </li>
+                                        <li class="flex items-start">
+                                            <span class="text-blue-500 mr-2">•</span>
+                                            軟組織変化予測: 上唇後退3-4mm
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold mb-3">メカニクス詳細</h4>
+                                    <div class="space-y-2 text-sm">
+                                        <div class="p-3 bg-gray-50 rounded">
+                                            <p class="font-medium">使用ワイヤー</p>
+                                            <p>.017×.025" SS with closing loop</p>
+                                            <p class="text-xs text-gray-600">または .019×.025" SS sliding mechanics</p>
+                                        </div>
+                                        <div class="p-3 bg-gray-50 rounded">
+                                            <p class="font-medium">牽引方法</p>
+                                            <p>En-masse retraction</p>
+                                            <p class="text-xs text-gray-600">Power chain (犬歯-臼歯フック)</p>
+                                        </div>
+                                        <div class="p-3 bg-gray-50 rounded">
+                                            <p class="font-medium">トルクコントロール</p>
+                                            <p>-7° lingual root torque</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4 p-4 bg-blue-50 rounded">
+                                <p class="text-sm"><strong>重要:</strong> 過度な舌側傾斜を防ぐため、4週毎にセファロで確認。根吸収のリスク管理。</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Phase 4 -->
+                    <div class="bg-white rounded-lg shadow overflow-hidden">
+                        <div class="bg-blue-50 p-4 border-b">
+                            <h3 class="text-lg font-semibold flex items-center">
+                                <span class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center mr-3">4</span>
+                                Phase 4: 咬合確立・仕上げ（18-24ヶ月）
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-2 gap-6">
+                                <div>
+                                    <h4 class="font-semibold mb-3">咬合調整項目</h4>
+                                    <ul class="space-y-2 text-sm">
+                                        <li class="flex items-start">
+                                            <span class="text-blue-500 mr-2">•</span>
+                                            臼歯関係: Class II → Class I（3.5mm前方移動）
+                                        </li>
+                                        <li class="flex items-start">
+                                            <span class="text-blue-500 mr-2">•</span>
+                                            オーバーバイト調整: 6mm → 2.5mm
+                                        </li>
+                                        <li class="flex items-start">
+                                            <span class="text-blue-500 mr-2">•</span>
+                                            正中線一致（現在2mm偏位）
+                                        </li>
+                                        <li class="flex items-start">
+                                            <span class="text-blue-500 mr-2">•</span>
+                                            咬頭嵌合の緊密化
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold mb-3">顎間ゴム使用計画</h4>
+                                    <div class="space-y-2 text-sm">
+                                        <div class="p-3 bg-gray-50 rounded">
+                                            <p class="font-medium">Class II ゴム</p>
+                                            <p>3/16" 6oz（昼夜使用）</p>
+                                            <p class="text-xs text-gray-600">上顎犬歯-下顎第一大臼歯</p>
+                                        </div>
+                                        <div class="p-3 bg-gray-50 rounded">
+                                            <p class="font-medium">Box ゴム（仕上げ期）</p>
+                                            <p>1/8" 4oz（夜間のみ）</p>
+                                        </div>
+                                        <div class="p-3 bg-gray-50 rounded">
+                                            <p class="font-medium">使用期間</p>
+                                            <p>4-6ヶ月（コンプライアンス依存）</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 保定計画 -->
+                <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-6 mt-6">
+                    <h3 class="text-lg font-semibold mb-4">保定計画</h3>
+                    <div class="grid grid-cols-3 gap-4 text-sm">
+                        <div>
+                            <p class="font-medium mb-2">上顎</p>
+                            <p>Wraparound retainer（終日装着6ヶ月→夜間のみ）</p>
+                        </div>
+                        <div>
+                            <p class="font-medium mb-2">下顎</p>
+                            <p>Fixed lingual retainer（3-3）+ Essix retainer</p>
+                        </div>
+                        <div>
+                            <p class="font-medium mb-2">経過観察</p>
+                            <p>1, 3, 6, 12ヶ月後、以降年1回</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tooth Movement Plan Tab -->
+        <div id="tooth-movement" class="tab-content p-6">
+            <div class="max-w-7xl mx-auto">
+                <h2 class="text-2xl font-bold mb-6">歯牙移動計画</h2>
+                
+                <!-- 歯式図 -->
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
+                    <h3 class="text-lg font-semibold mb-4">個別歯牙移動量（mm）</h3>
+                    <div class="tooth-diagram mb-8">
+                        <!-- 上顎 -->
+                        <div class="tooth tooth-upper">18</div>
+                        <div class="tooth tooth-upper">17</div>
+                        <div class="tooth tooth-upper">16</div>
+                        <div class="tooth tooth-upper">15</div>
+                        <div class="tooth tooth-upper tooth-moved">14<br><span class="text-xs">抜歯</span></div>
+                        <div class="tooth tooth-upper tooth-moved">13<br><span class="text-xs">-4.5</span></div>
+                        <div class="tooth tooth-upper tooth-moved">12<br><span class="text-xs">-5.0</span></div>
+                        <div class="tooth tooth-upper tooth-moved">11<br><span class="text-xs">-5.5</span></div>
+                        <div class="tooth tooth-upper tooth-moved">21<br><span class="text-xs">-5.5</span></div>
+                        <div class="tooth tooth-upper tooth-moved">22<br><span class="text-xs">-5.0</span></div>
+                        <div class="tooth tooth-upper tooth-moved">23<br><span class="text-xs">-4.5</span></div>
+                        <div class="tooth tooth-upper tooth-moved">24<br><span class="text-xs">抜歯</span></div>
+                        <div class="tooth tooth-upper">25</div>
+                        <div class="tooth tooth-upper">26</div>
+                        <div class="tooth tooth-upper">27</div>
+                        <div class="tooth tooth-upper">28</div>
+                    </div>
+                    <div class="tooth-diagram">
+                        <!-- 下顎 -->
+                        <div class="tooth tooth-lower">48</div>
+                        <div class="tooth tooth-lower">47</div>
+                        <div class="tooth tooth-lower tooth-moved">46<br><span class="text-xs">+3.5</span></div>
+                        <div class="tooth tooth-lower tooth-moved">45<br><span class="text-xs">+3.0</span></div>
+                        <div class="tooth tooth-lower tooth-moved">44<br><span class="text-xs">+2.5</span></div>
+                        <div class="tooth tooth-lower">43</div>
+                        <div class="tooth tooth-lower">42</div>
+                        <div class="tooth tooth-lower">41</div>
+                        <div class="tooth tooth-lower">31</div>
+                        <div class="tooth tooth-lower">32</div>
+                        <div class="tooth tooth-lower">33</div>
+                        <div class="tooth tooth-lower tooth-moved">34<br><span class="text-xs">+2.5</span></div>
+                        <div class="tooth tooth-lower tooth-moved">35<br><span class="text-xs">+3.0</span></div>
+                        <div class="tooth tooth-lower tooth-moved">36<br><span class="text-xs">+3.5</span></div>
+                        <div class="tooth tooth-lower">37</div>
+                        <div class="tooth tooth-lower">38</div>
+                    </div>
+                </div>
+                
+                <!-- 移動詳細テーブル -->
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">歯番</th>
+                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">移動方向</th>
+                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">移動量</th>
+                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">回転</th>
+                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">トルク</th>
+                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">期間</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 text-sm">11, 21（上顎中切歯）</td>
+                                <td class="px-4 py-3 text-sm">遠心・舌側</td>
+                                <td class="px-4 py-3 text-sm text-red-600 font-medium">5.5mm後退</td>
+                                <td class="px-4 py-3 text-sm">なし</td>
+                                <td class="px-4 py-3 text-sm">-7° (舌側)</td>
+                                <td class="px-4 py-3 text-sm">8ヶ月</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 text-sm">12, 22（上顎側切歯）</td>
+                                <td class="px-4 py-3 text-sm">遠心・舌側</td>
+                                <td class="px-4 py-3 text-sm text-red-600 font-medium">5.0mm後退</td>
+                                <td class="px-4 py-3 text-sm">5° 遠心</td>
+                                <td class="px-4 py-3 text-sm">-5° (舌側)</td>
+                                <td class="px-4 py-3 text-sm">8ヶ月</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 text-sm">13, 23（上顎犬歯）</td>
+                                <td class="px-4 py-3 text-sm">遠心</td>
+                                <td class="px-4 py-3 text-sm text-orange-600 font-medium">4.5mm後退</td>
+                                <td class="px-4 py-3 text-sm">10° 遠心</td>
+                                <td class="px-4 py-3 text-sm">0°</td>
+                                <td class="px-4 py-3 text-sm">6ヶ月</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 text-sm">46, 36（下顎第一大臼歯）</td>
+                                <td class="px-4 py-3 text-sm">近心</td>
+                                <td class="px-4 py-3 text-sm text-blue-600 font-medium">3.5mm前進</td>
+                                <td class="px-4 py-3 text-sm">なし</td>
+                                <td class="px-4 py-3 text-sm">0°</td>
+                                <td class="px-4 py-3 text-sm">6ヶ月</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 text-sm">45, 35（下顎第二小臼歯）</td>
+                                <td class="px-4 py-3 text-sm">近心</td>
+                                <td class="px-4 py-3 text-sm text-blue-600 font-medium">3.0mm前進</td>
+                                <td class="px-4 py-3 text-sm">なし</td>
+                                <td class="px-4 py-3 text-sm">0°</td>
+                                <td class="px-4 py-3 text-sm">6ヶ月</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- アンカレッジ管理 -->
+                <div class="grid grid-cols-2 gap-6 mt-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">アンカレッジ管理計画</h3>
+                        <div class="space-y-3 text-sm">
+                            <div class="p-3 bg-orange-50 rounded">
+                                <p class="font-medium">最大アンカレッジ必要部位</p>
+                                <p>上顎臼歯部（前歯5.5mm後退に対応）</p>
+                            </div>
+                            <div class="p-3 bg-blue-50 rounded">
+                                <p class="font-medium">使用デバイス</p>
+                                <p>Nance holding arch + TPAの併用</p>
+                                <p class="text-xs text-gray-600 mt-1">※ミニスクリューは第二選択</p>
+                            </div>
+                            <div class="p-3 bg-gray-50 rounded">
+                                <p class="font-medium">アンカレッジロス予測</p>
+                                <p>上顎臼歯: 最大1.5mm（許容範囲内）</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">副作用リスクと対策</h3>
+                        <div class="space-y-3 text-sm">
+                            <div class="flex items-start">
+                                <span class="text-red-500 mr-2">⚠</span>
+                                <div>
+                                    <p class="font-medium">歯根吸収リスク</p>
+                                    <p class="text-gray-600">上顎前歯（特に中切歯）- 6ヶ月毎にX線確認</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <span class="text-yellow-500 mr-2">⚠</span>
+                                <div>
+                                    <p class="font-medium">歯肉退縮</p>
+                                    <p class="text-gray-600">下顎前歯部 - 口腔衛生管理の徹底</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <span class="text-blue-500 mr-2">⚠</span>
+                                <div>
+                                    <p class="font-medium">顎関節症状</p>
+                                    <p class="text-gray-600">咬合高径の変化に注意 - 段階的調整</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline Tab -->
+        <div id="timeline" class="tab-content p-6">
+            <div class="max-w-7xl mx-auto">
+                <h2 class="text-2xl font-bold mb-6">治療経過タイムライン</h2>
+                
+                <div class="grid grid-cols-3 gap-6">
+                    <!-- メインタイムライン -->
+                    <div class="col-span-2 space-y-4">
+                        <!-- 初診 -->
+                        <div class="timeline-item bg-white rounded-lg shadow p-6">
+                            <div class="flex justify-between items-start mb-3">
+                                <h3 class="text-lg font-semibold">初診・精密検査</h3>
+                                <span class="text-sm text-gray-500">2024年1月15日</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <p class="font-medium mb-2">実施項目</p>
+                                    <ul class="space-y-1 text-gray-600">
+                                        <li>• 口腔内写真撮影（5枚法）</li>
+                                        <li>• 顔面写真撮影（3方向）</li>
+                                        <li>• パノラマX線撮影</li>
+                                        <li>• セファロ撮影（側面・正面）</li>
+                                        <li>• 印象採得（アルジネート）</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <p class="font-medium mb-2">初診時所見</p>
+                                    <ul class="space-y-1 text-gray-600">
+                                        <li>• 主訴: 前歯の突出</li>
+                                        <li>• Angle Class II div.1</li>
+                                        <li>• オーバージェット: 7.0mm</li>
+                                        <li>• オーバーバイト: 6.0mm</li>
+                                        <li>• 上顎叢生: -4.5mm</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 治療開始 -->
+                        <div class="timeline-item bg-white rounded-lg shadow p-6">
+                            <div class="flex justify-between items-start mb-3">
+                                <h3 class="text-lg font-semibold">治療開始・装置装着</h3>
+                                <span class="text-sm text-gray-500">2024年2月1日</span>
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                <p class="mb-2">上下顎セラミックブラケット装着完了。初期ワイヤー .014" Ni-Ti 装着。</p>
+                                <div class="bg-blue-50 p-3 rounded">
+                                    <p class="font-medium text-blue-800">患者指導内容:</p>
+                                    <p>• ブラッシング方法（矯正用歯ブラシ使用）</p>
+                                    <p>• 食事制限（硬い食べ物、粘着性食品を避ける）</p>
+                                    <p>• 疼痛時の対処法（鎮痛剤の使用）</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 抜歯 -->
+                        <div class="timeline-item bg-white rounded-lg shadow p-6">
+                            <div class="flex justify-between items-start mb-3">
+                                <h3 class="text-lg font-semibold">上顎小臼歯抜歯</h3>
+                                <span class="text-sm text-gray-500">2024年2月15日</span>
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                <p>上顎第一小臼歯（14, 24）抜歯完了。抜歯窩の治癒良好。</p>
+                                <div class="mt-2 p-3 bg-gray-50 rounded">
+                                    <p>抜歯スペース: 左右各7.5mm確保</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 現在の状態 -->
+                        <div class="timeline-item bg-blue-100 rounded-lg shadow p-6 border-2 border-blue-300">
+                            <div class="flex justify-between items-start mb-3">
+                                <h3 class="text-lg font-semibold text-blue-800">現在の治療状況</h3>
+                                <span class="text-sm text-blue-600 font-medium">2024年3月15日（治療2ヶ月目）</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <p class="font-medium mb-2 text-blue-800">達成事項</p>
+                                    <ul class="space-y-1 text-gray-700">
+                                        <li>✓ 初期レベリング進行中</li>
+                                        <li>✓ 上顎叢生改善（-4.5mm → -2.0mm）</li>
+                                        <li>✓ ワイヤーサイズアップ（.016" Ni-Ti）</li>
+                                        <li>✓ 口腔衛生状態良好</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <p class="font-medium mb-2 text-blue-800">次回予定</p>
+                                    <ul class="space-y-1 text-gray-700">
+                                        <li>• .016×.022" Ni-Ti へ交換</li>
+                                        <li>• Nance装置の印象採得</li>
+                                        <li>• 犬歯遠心移動の準備</li>
+                                        <li>• 進捗写真撮影</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- サイドパネル -->
+                    <div class="space-y-6">
+                        <!-- 進捗サマリー -->
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold mb-4">治療進捗サマリー</h3>
+                            <div class="space-y-3">
+                                <div>
+                                    <div class="flex justify-between text-sm mb-1">
+                                        <span>全体進捗</span>
+                                        <span class="font-medium">8.3%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-blue-600 h-2 rounded-full" style="width: 8.3%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-sm mb-1">
+                                        <span>Phase 1 (レベリング)</span>
+                                        <span class="font-medium">50%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-green-500 h-2 rounded-full" style="width: 50%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 次回予約 -->
+                        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold mb-3">次回予約</h3>
+                            <div class="space-y-2 text-sm">
+                                <p class="font-medium">2024年4月10日（水）14:00</p>
+                                <p class="text-gray-600">調整内容:</p>
+                                <ul class="ml-4 space-y-1 text-gray-600">
+                                    <li>• ワイヤー交換</li>
+                                    <li>• Nance装置セット</li>
+                                    <li>• 口腔内写真撮影</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- コンプライアンス -->
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold mb-3">患者協力度</h3>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span>口腔衛生</span>
+                                    <span class="text-green-600">★★★★☆</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>来院頻度</span>
+                                    <span class="text-green-600">★★★★★</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>装置の取り扱い</span>
+                                    <span class="text-green-600">★★★★☆</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Simulation Tab -->
+        <div id="simulation" class="tab-content p-6">
+            <div class="max-w-7xl mx-auto">
+                <h2 class="text-2xl font-bold mb-6">治療予測シミュレーション</h2>
+                
+                <div class="grid grid-cols-2 gap-6">
+                    <!-- 予測グラフ -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">オーバージェット改善予測</h3>
+                        <canvas id="overjetChart" width="400" height="300"></canvas>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">軟組織変化予測</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-2">上唇突出度変化</p>
+                                <div class="flex items-center gap-4">
+                                    <span class="text-2xl font-bold">+4mm</span>
+                                    <span class="text-gray-500">→</span>
+                                    <span class="text-2xl font-bold text-green-600">+1mm</span>
+                                    <span class="text-sm text-gray-600">（3mm後退）</span>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600 mb-2">E-line との関係</p>
+                                <div class="flex items-center gap-4">
+                                    <span class="text-xl">現在: +2mm</span>
+                                    <span class="text-gray-500">→</span>
+                                    <span class="text-xl text-green-600">予測: -1mm</span>
+                                </div>
+                            </div>
+                            <div class="p-4 bg-blue-50 rounded">
+                                <p class="text-sm"><strong>注:</strong> 軟組織変化は個人差があり、予測値は平均的な反応に基づきます。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 3Dシミュレーション風の表示 -->
+                <div class="bg-white rounded-lg shadow p-6 mt-6">
+                    <h3 class="text-lg font-semibold mb-4">歯列変化シミュレーション</h3>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="text-center">
+                            <div class="bg-gray-100 rounded-lg p-8 mb-2">
+                                <div class="photo-placeholder h-48 flex items-center justify-center">
+                                    <div>
+                                        <p class="font-medium">治療前</p>
+                                        <p class="text-sm text-gray-600 mt-2">オーバージェット: 7.0mm</p>
+                                        <p class="text-sm text-gray-600">臼歯関係: Class II</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-sm font-medium">初診時（2024年1月）</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="bg-blue-50 rounded-lg p-8 mb-2 border-2 border-blue-200">
+                                <div class="photo-placeholder h-48 flex items-center justify-center">
+                                    <div>
+                                        <p class="font-medium text-blue-800">治療中</p>
+                                        <p class="text-sm text-gray-600 mt-2">オーバージェット: 4.5mm</p>
+                                        <p class="text-sm text-gray-600">前歯後退中</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-sm font-medium">12ヶ月後予測</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="bg-green-50 rounded-lg p-8 mb-2">
+                                <div class="photo-placeholder h-48 flex items-center justify-center">
+                                    <div>
+                                        <p class="font-medium text-green-800">治療完了</p>
+                                        <p class="text-sm text-gray-600 mt-2">オーバージェット: 2.5mm</p>
+                                        <p class="text-sm text-gray-600">臼歯関係: Class I</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-sm font-medium">24ヶ月後予測</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- リスク評価 -->
+                <div class="bg-white rounded-lg shadow p-6 mt-6">
+                    <h3 class="text-lg font-semibold mb-4">治療リスク評価と成功率予測</h3>
+                    <div class="grid grid-cols-4 gap-4">
+                        <div class="text-center p-4 bg-green-50 rounded">
+                            <p class="text-3xl font-bold text-green-600">85%</p>
+                            <p class="text-sm text-gray-600">治療成功率</p>
+                        </div>
+                        <div class="text-center p-4 bg-yellow-50 rounded">
+                            <p class="text-3xl font-bold text-yellow-600">15%</p>
+                            <p class="text-sm text-gray-600">追加処置必要性</p>
+                        </div>
+                        <div class="text-center p-4 bg-blue-50 rounded">
+                            <p class="text-3xl font-bold text-blue-600">95%</p>
+                            <p class="text-sm text-gray-600">患者満足度予測</p>
+                        </div>
+                        <div class="text-center p-4 bg-purple-50 rounded">
+                            <p class="text-3xl font-bold text-purple-600">24ヶ月</p>
+                            <p class="text-sm text-gray-600">予定通り完了率</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-b-2', 'border-blue-500', 'text-blue-600');
+                btn.classList.add('text-gray-600');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Update button styling
+            event.target.classList.remove('text-gray-600');
+            event.target.classList.add('border-b-2', 'border-blue-500', 'text-blue-600');
+            
+            // Initialize charts if needed
+            if (tabName === 'analysis') {
+                initializeArchFormChart();
+            } else if (tabName === 'simulation') {
+                initializeOverjetChart();
+            }
+        }
+        
+        function initializeArchFormChart() {
+            const ctx = document.getElementById('archFormChart');
+            if (ctx && ctx.getContext) {
+                const context = ctx.getContext('2d');
+                // Simple arch form visualization
+                context.clearRect(0, 0, 400, 300);
+                context.strokeStyle = '#3b82f6';
+                context.lineWidth = 2;
+                context.beginPath();
+                context.moveTo(200, 50);
+                context.quadraticCurveTo(100, 100, 100, 200);
+                context.quadraticCurveTo(200, 250, 300, 200);
+                context.quadraticCurveTo(300, 100, 200, 50);
+                context.stroke();
+                
+                // Add teeth positions
+                const teeth = [
+                    {x: 200, y: 60}, {x: 170, y: 65}, {x: 140, y: 80},
+                    {x: 120, y: 110}, {x: 110, y: 140}, {x: 110, y: 170},
+                    {x: 120, y: 200}, {x: 140, y: 220}, {x: 170, y: 235},
+                    {x: 200, y: 240}, {x: 230, y: 235}, {x: 260, y: 220},
+                    {x: 280, y: 200}, {x: 290, y: 170}, {x: 290, y: 140},
+                    {x: 280, y: 110}, {x: 260, y: 80}, {x: 230, y: 65}
+                ];
+                
+                teeth.forEach(tooth => {
+                    context.fillStyle = '#fbbf24';
+                    context.fillRect(tooth.x - 5, tooth.y - 5, 10, 10);
+                });
+            }
+        }
+        
+        function initializeOverjetChart() {
+            const ctx = document.getElementById('overjetChart');
+            if (ctx && ctx.getContext) {
+                const context = ctx.getContext('2d');
+                context.clearRect(0, 0, 400, 300);
+                
+                // Draw axes
+                context.strokeStyle = '#6b7280';
+                context.lineWidth = 1;
+                context.beginPath();
+                context.moveTo(50, 250);
+                context.lineTo(350, 250);
+                context.moveTo(50, 250);
+                context.lineTo(50, 50);
+                context.stroke();
+                
+                // Draw prediction curve
+                context.strokeStyle = '#3b82f6';
+                context.lineWidth = 3;
+                context.beginPath();
+                context.moveTo(50, 100);
+                context.quadraticCurveTo(150, 140, 250, 200);
+                context.quadraticCurveTo(300, 220, 350, 225);
+                context.stroke();
+                
+                // Add labels
+                context.fillStyle = '#374151';
+                context.font = '12px sans-serif';
+                context.fillText('0', 45, 255);
+                context.fillText('6', 45, 205);
+                context.fillText('12', 145, 265);
+                context.fillText('24ヶ月', 335, 265);
+                context.fillText('7.0mm', 15, 105);
+                context.fillText('2.5mm', 15, 230);
+            }
+        }
+    </script>
+</body>
+</html>

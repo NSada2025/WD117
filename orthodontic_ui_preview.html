@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>矯正治療計画立案・評価システム - UIプレビュー</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .image-card:hover { transform: scale(1.02); transition: transform 0.2s; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Header -->
+    <div class="bg-white shadow-md p-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">矯正治療計画立案・評価システム</h1>
+                <p class="text-gray-600">患者: 山田太郎 | 年齢: 25歳 | ID: 2024-001</p>
+            </div>
+            <div class="flex gap-2">
+                <button class="px-4 py-2 rounded bg-blue-500 text-white">グリッド表示</button>
+                <button class="px-4 py-2 rounded bg-gray-200">比較表示</button>
+                <button class="px-4 py-2 rounded bg-gray-200">タイムライン</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="bg-white border-b">
+        <div class="flex">
+            <button onclick="showTab('images')" class="tab-btn px-6 py-3 font-medium border-b-2 border-blue-500 text-blue-600">画像</button>
+            <button onclick="showTab('analysis')" class="tab-btn px-6 py-3 font-medium text-gray-600 hover:text-gray-800">分析結果</button>
+            <button onclick="showTab('plan')" class="tab-btn px-6 py-3 font-medium text-gray-600 hover:text-gray-800">治療計画</button>
+            <button onclick="showTab('timeline')" class="tab-btn px-6 py-3 font-medium text-gray-600 hover:text-gray-800">経過観察</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 overflow-hidden">
+        <!-- Images Tab -->
+        <div id="images" class="tab-content active h-full flex">
+            <div class="w-48 bg-gray-50 p-4 border-r">
+                <h3 class="font-semibold mb-3">画像タイプ</h3>
+                <div class="space-y-2">
+                    <button class="w-full text-left px-3 py-2 rounded bg-blue-100 text-blue-700">顔面写真 (6)</button>
+                    <button class="w-full text-left px-3 py-2 rounded hover:bg-gray-100">レントゲン (4)</button>
+                    <button class="w-full text-left px-3 py-2 rounded hover:bg-gray-100">口腔内写真 (8)</button>
+                    <button class="w-full text-left px-3 py-2 rounded hover:bg-gray-100">模型写真 (4)</button>
+                </div>
+                <div class="mt-6">
+                    <h3 class="font-semibold mb-3">表示設定</h3>
+                    <label class="flex items-center gap-2 mb-2">
+                        <input type="checkbox" checked>
+                        <span class="text-sm">注釈を表示</span>
+                    </label>
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" checked>
+                        <span class="text-sm">計測値を表示</span>
+                    </label>
+                </div>
+            </div>
+            <div class="flex-1 overflow-auto p-4">
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="image-card relative cursor-pointer border-2 rounded-lg overflow-hidden border-gray-300 bg-gray-200 h-64">
+                        <div class="flex items-center justify-center h-full text-gray-500">正面顔面写真</div>
+                        <div class="absolute top-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs">治療前</div>
+                    </div>
+                    <div class="image-card relative cursor-pointer border-2 rounded-lg overflow-hidden border-gray-300 bg-gray-200 h-64">
+                        <div class="flex items-center justify-center h-full text-gray-500">側面顔面写真</div>
+                        <div class="absolute top-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs">治療前</div>
+                    </div>
+                    <div class="image-card relative cursor-pointer border-2 rounded-lg overflow-hidden border-gray-300 bg-gray-200 h-64">
+                        <div class="flex items-center justify-center h-full text-gray-500">スマイル写真</div>
+                        <div class="absolute top-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs">治療前</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysis Tab -->
+        <div id="analysis" class="tab-content p-6">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-2xl font-bold mb-6">分析結果</h2>
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
+                    <h3 class="text-xl font-semibold mb-4">咬合分析結果</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-gray-600">総合スコア</p>
+                            <p class="text-3xl font-bold text-red-600">36.6</p>
+                            <p class="text-sm text-gray-500">中等度の不正咬合</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-600">重症度</p>
+                            <div class="flex items-center gap-2 mt-2">
+                                <div class="w-32 bg-gray-200 rounded-full h-4">
+                                    <div class="bg-orange-500 h-4 rounded-full" style="width: 60%"></div>
+                                </div>
+                                <span class="text-sm">中等度</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <h4 class="font-semibold mb-3">優先改善項目</h4>
+                        <ol class="list-decimal list-inside space-y-2">
+                            <li>臼歯関係（Class II）- スコア: 60.0</li>
+                            <li>オーバージェット（7.0mm）- スコア: 45.0</li>
+                            <li>オーバーバイト（6.0mm）- スコア: 30.0</li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-xl font-semibold mb-4">セファロ分析</h3>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="text-center">
+                            <p class="text-gray-600">ANB角</p>
+                            <p class="text-2xl font-bold">6.0°</p>
+                            <p class="text-sm text-red-500">標準値より大きい</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-gray-600">FMA</p>
+                            <p class="text-2xl font-bold">25.0°</p>
+                            <p class="text-sm text-green-500">標準範囲内</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-gray-600">IMPA</p>
+                            <p class="text-2xl font-bold">95.0°</p>
+                            <p class="text-sm text-green-500">標準範囲内</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Treatment Plan Tab -->
+        <div id="plan" class="tab-content p-6">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-2xl font-bold mb-6">治療計画</h2>
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-semibold">推奨治療計画</h3>
+                        <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">承認済み</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <p class="text-gray-600">装置タイプ</p>
+                            <p class="font-semibold">セラミックブラケット</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-600">予定治療期間</p>
+                            <p class="font-semibold">24ヶ月</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-xl font-semibold mb-4">治療フェーズ</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center">1</div>
+                            <div class="flex-1">
+                                <p class="font-semibold">初期アライメント（0-3ヶ月）</p>
+                                <p class="text-sm text-gray-600">叢生の解消と初期の歯列整列</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center">2</div>
+                            <div class="flex-1">
+                                <p class="font-semibold">スペース閉鎖（3-9ヶ月）</p>
+                                <p class="text-sm text-gray-600">抜歯スペースの閉鎖</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center">3</div>
+                            <div class="flex-1">
+                                <p class="font-semibold">咬合調整（9-18ヶ月）</p>
+                                <p class="text-sm text-gray-600">臼歯関係の改善とオーバージェット・オーバーバイトの調整</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center">4</div>
+                            <div class="flex-1">
+                                <p class="font-semibold">仕上げ（18-24ヶ月）</p>
+                                <p class="text-sm text-gray-600">最終的な咬合の微調整</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline Tab -->
+        <div id="timeline" class="tab-content p-6">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-2xl font-bold mb-6">治療経過</h2>
+                <div class="space-y-4">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold">2024年1月 - 初診</h3>
+                            <span class="text-sm text-gray-500">治療開始</span>
+                        </div>
+                        <p class="text-gray-600">初診時検査実施。セファロ分析、模型分析完了。</p>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold">2024年2月 - ブラケット装着</h3>
+                            <span class="text-sm text-gray-500">1ヶ月目</span>
+                        </div>
+                        <p class="text-gray-600">上下顎にセラミックブラケット装着。初期ワイヤー（0.014 NiTi）使用開始。</p>
+                    </div>
+                    <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-blue-800">2024年3月 - 経過観察（現在）</h3>
+                            <span class="text-sm text-blue-600">2ヶ月目</span>
+                        </div>
+                        <p class="text-gray-700">初期アライメント進行中。叢生の改善が認められる。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-b-2', 'border-blue-500', 'text-blue-600');
+                btn.classList.add('text-gray-600');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Update button styling
+            event.target.classList.remove('text-gray-600');
+            event.target.classList.add('border-b-2', 'border-blue-500', 'text-blue-600');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>矯正治療分析システム - 簡易版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .tooth { cursor: pointer; transition: all 0.3s; }
+        .tooth:hover { transform: scale(1.2); }
+        .selected { fill: #ef4444; }
+        .extracted { fill: #6b7280; opacity: 0.5; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4 max-w-6xl">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">矯正治療分析システム</h1>
+            <p class="text-gray-600">患者データを入力して、咬合分析と治療計画を自動生成します</p>
+        </div>
+
+        <!-- Input Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- Patient Info -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4">患者情報</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">患者名</label>
+                        <input type="text" id="patientName" class="w-full p-2 border rounded" value="山田太郎">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">年齢</label>
+                            <input type="number" id="patientAge" class="w-full p-2 border rounded" value="25">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">性別</label>
+                            <select id="patientGender" class="w-full p-2 border rounded">
+                                <option>男性</option>
+                                <option>女性</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">主訴</label>
+                        <input type="text" id="chiefComplaint" class="w-full p-2 border rounded" value="前歯の突出">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Measurements -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4">計測値入力</h2>
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">オーバージェット (mm)</label>
+                            <input type="number" id="overjet" class="w-full p-2 border rounded" value="7.0" step="0.5">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">オーバーバイト (mm)</label>
+                            <input type="number" id="overbite" class="w-full p-2 border rounded" value="6.0" step="0.5">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">ANB角 (度)</label>
+                            <input type="number" id="anb" class="w-full p-2 border rounded" value="6.0" step="0.5">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">臼歯関係</label>
+                            <select id="molarRelation" class="w-full p-2 border rounded">
+                                <option value="CLASS_I">Class I</option>
+                                <option value="CLASS_II" selected>Class II</option>
+                                <option value="CLASS_III">Class III</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="analyzeOcclusion()" class="mt-6 w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition font-semibold">
+                    分析実行
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="hidden">
+            <!-- Analysis Results -->
+            <div class="bg-white rounded-lg shadow p-6 mb-6">
+                <h2 class="text-xl font-semibold mb-4">咬合分析結果</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="text-center p-4 bg-red-50 rounded-lg">
+                        <p class="text-sm text-gray-600">総合スコア</p>
+                        <p id="totalScore" class="text-4xl font-bold text-red-600 my-2">-</p>
+                        <p id="severity" class="text-sm">-</p>
+                    </div>
+                    <div class="text-center p-4 bg-orange-50 rounded-lg">
+                        <p class="text-sm text-gray-600">最優先改善項目</p>
+                        <p id="priority1" class="text-xl font-semibold text-orange-600 my-2">-</p>
+                        <p id="priority1Score" class="text-sm">-</p>
+                    </div>
+                    <div class="text-center p-4 bg-yellow-50 rounded-lg">
+                        <p class="text-sm text-gray-600">推奨治療期間</p>
+                        <p id="duration" class="text-2xl font-bold text-yellow-600 my-2">-</p>
+                        <p class="text-sm">ヶ月</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Treatment Plan -->
+            <div class="bg-white rounded-lg shadow p-6 mb-6">
+                <h2 class="text-xl font-semibold mb-4">自動生成治療計画</h2>
+                <div class="space-y-4" id="treatmentPlan">
+                    <!-- Will be filled by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Tooth Movement Visualization -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4">歯牙移動シミュレーション</h2>
+                <div class="flex justify-center mb-4">
+                    <svg width="600" height="300" viewBox="0 0 600 300">
+                        <!-- Upper Teeth -->
+                        <g id="upperTeeth">
+                            <!-- Molars -->
+                            <rect class="tooth" x="50" y="50" width="30" height="30" rx="5" fill="#fbbf24" data-tooth="17"/>
+                            <rect class="tooth" x="90" y="50" width="30" height="30" rx="5" fill="#fbbf24" data-tooth="16"/>
+                            <rect class="tooth" x="130" y="50" width="30" height="30" rx="5" fill="#fbbf24" data-tooth="15"/>
+                            <rect class="tooth extracted" x="170" y="50" width="30" height="30" rx="5" data-tooth="14"/>
+                            <rect class="tooth" x="210" y="50" width="30" height="30" rx="5" fill="#fbbf24" data-tooth="13"/>
+                            <rect class="tooth" x="250" y="50" width="30" height="30" rx="5" fill="#fbbf24" data-tooth="12"/>
+                            <rect class="tooth" x="290" y="50" width="30" height="30" rx="5" fill="#fbbf24" data-tooth="11"/>
+                            <rect class="tooth" x="330" y="50" width="30" height="30" rx="5" fill="#fbbf24" data-tooth="21"/>
+                            <rect class="tooth" x="370" y="50" width="30" height="30" rx="5" fill="#fbbf24" data-tooth="22"/>
+                            <rect class="tooth" x="410" y="50" width="30" height="30" rx="5" fill="#fbbf24" data-tooth="23"/>
+                            <rect class="tooth extracted" x="450" y="50" width="30" height="30" rx="5" data-tooth="24"/>
+                            <rect class="tooth" x="490" y="50" width="30" height="30" rx="5" fill="#fbbf24" data-tooth="25"/>
+                            <rect class="tooth" x="530" y="50" width="30" height="30" rx="5" fill="#fbbf24" data-tooth="26"/>
+                            <rect class="tooth" x="570" y="50" width="30" height="30" rx="5" fill="#fbbf24" data-tooth="27"/>
+                        </g>
+                        
+                        <!-- Lower Teeth -->
+                        <g id="lowerTeeth">
+                            <rect class="tooth" x="50" y="200" width="30" height="30" rx="5" fill="#60a5fa" data-tooth="47"/>
+                            <rect class="tooth" x="90" y="200" width="30" height="30" rx="5" fill="#60a5fa" data-tooth="46"/>
+                            <rect class="tooth" x="130" y="200" width="30" height="30" rx="5" fill="#60a5fa" data-tooth="45"/>
+                            <rect class="tooth" x="170" y="200" width="30" height="30" rx="5" fill="#60a5fa" data-tooth="44"/>
+                            <rect class="tooth" x="210" y="200" width="30" height="30" rx="5" fill="#60a5fa" data-tooth="43"/>
+                            <rect class="tooth" x="250" y="200" width="30" height="30" rx="5" fill="#60a5fa" data-tooth="42"/>
+                            <rect class="tooth" x="290" y="200" width="30" height="30" rx="5" fill="#60a5fa" data-tooth="41"/>
+                            <rect class="tooth" x="330" y="200" width="30" height="30" rx="5" fill="#60a5fa" data-tooth="31"/>
+                            <rect class="tooth" x="370" y="200" width="30" height="30" rx="5" fill="#60a5fa" data-tooth="32"/>
+                            <rect class="tooth" x="410" y="200" width="30" height="30" rx="5" fill="#60a5fa" data-tooth="33"/>
+                            <rect class="tooth" x="450" y="200" width="30" height="30" rx="5" fill="#60a5fa" data-tooth="34"/>
+                            <rect class="tooth" x="490" y="200" width="30" height="30" rx="5" fill="#60a5fa" data-tooth="35"/>
+                            <rect class="tooth" x="530" y="200" width="30" height="30" rx="5" fill="#60a5fa" data-tooth="36"/>
+                            <rect class="tooth" x="570" y="200" width="30" height="30" rx="5" fill="#60a5fa" data-tooth="37"/>
+                        </g>
+                        
+                        <!-- Movement Arrows -->
+                        <g id="movementArrows" style="display: none;">
+                            <!-- Upper front teeth backward movement -->
+                            <path d="M 305 90 L 285 90" stroke="#ef4444" stroke-width="3" marker-end="url(#arrowhead)"/>
+                            <text x="295" y="105" fill="#ef4444" font-size="12">5.5mm</text>
+                            
+                            <path d="M 345 90 L 365 90" stroke="#ef4444" stroke-width="3" marker-start="url(#arrowhead)"/>
+                            <text x="345" y="105" fill="#ef4444" font-size="12">5.5mm</text>
+                            
+                            <!-- Lower molars forward movement -->
+                            <path d="M 100 190 L 120 190" stroke="#3b82f6" stroke-width="3" marker-end="url(#arrowhead)"/>
+                            <text x="100" y="185" fill="#3b82f6" font-size="12">3.5mm</text>
+                            
+                            <path d="M 540 190 L 520 190" stroke="#3b82f6" stroke-width="3" marker-start="url(#arrowhead)"/>
+                            <text x="525" y="185" fill="#3b82f6" font-size="12">3.5mm</text>
+                        </g>
+                        
+                        <!-- Arrow marker definition -->
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#ef4444"/>
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+                <div class="text-center">
+                    <button onclick="toggleMovementAnimation()" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition">
+                        移動シミュレーション表示
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function analyzeOcclusion() {
+            // Get input values
+            const overjet = parseFloat(document.getElementById('overjet').value);
+            const overbite = parseFloat(document.getElementById('overbite').value);
+            const anb = parseFloat(document.getElementById('anb').value);
+            const molarRelation = document.getElementById('molarRelation').value;
+            
+            // Calculate scores
+            const overjetScore = Math.min(100, Math.max(0, (overjet - 2) * 15));
+            const overbiteScore = Math.min(100, Math.max(0, (overbite - 2) * 10));
+            const anbScore = Math.min(100, Math.max(0, Math.abs(anb - 2) * 10));
+            const molarScore = molarRelation === 'CLASS_II' ? 60 : (molarRelation === 'CLASS_III' ? 70 : 0);
+            
+            const totalScore = (overjetScore * 0.3 + overbiteScore * 0.2 + anbScore * 0.2 + molarScore * 0.3).toFixed(1);
+            
+            // Determine severity
+            let severity = '';
+            let severityColor = '';
+            if (totalScore < 20) {
+                severity = '軽度';
+                severityColor = 'text-green-600';
+            } else if (totalScore < 50) {
+                severity = '中等度';
+                severityColor = 'text-orange-600';
+            } else {
+                severity = '重度';
+                severityColor = 'text-red-600';
+            }
+            
+            // Update results
+            document.getElementById('totalScore').textContent = totalScore;
+            document.getElementById('severity').textContent = severity;
+            document.getElementById('severity').className = `text-sm font-semibold ${severityColor}`;
+            
+            // Priority items
+            const priorities = [
+                { name: '臼歯関係', score: molarScore },
+                { name: 'オーバージェット', score: overjetScore },
+                { name: 'オーバーバイト', score: overbiteScore },
+                { name: 'ANB角', score: anbScore }
+            ].sort((a, b) => b.score - a.score);
+            
+            document.getElementById('priority1').textContent = priorities[0].name;
+            document.getElementById('priority1Score').textContent = `スコア: ${priorities[0].score.toFixed(1)}`;
+            
+            // Treatment duration
+            const baseDuration = 18;
+            const additionalMonths = Math.floor(totalScore / 10) * 2;
+            const duration = baseDuration + additionalMonths;
+            document.getElementById('duration').textContent = duration;
+            
+            // Generate treatment plan
+            generateTreatmentPlan(overjet, overbite, anb, molarRelation, duration);
+            
+            // Show results
+            document.getElementById('results').classList.remove('hidden');
+            
+            // Scroll to results
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function generateTreatmentPlan(overjet, overbite, anb, molarRelation, duration) {
+            const planDiv = document.getElementById('treatmentPlan');
+            planDiv.innerHTML = '';
+            
+            // Phase 1
+            const phase1 = createPhase(
+                1, 
+                'レベリング・アライメント（0-4ヶ月）',
+                [
+                    'セラミックブラケット装着（.022"スロット）',
+                    '初期ワイヤー: .014" Ni-Ti',
+                    '上顎第一小臼歯（14, 24）抜歯',
+                    '叢生解消と初期整列'
+                ],
+                'blue'
+            );
+            planDiv.appendChild(phase1);
+            
+            // Phase 2
+            const phase2 = createPhase(
+                2,
+                '犬歯遠心移動（4-10ヶ月）',
+                [
+                    `上顎犬歯を${(overjet * 0.6).toFixed(1)}mm遠心移動`,
+                    'Power chain使用（150-200g）',
+                    'ワイヤー: .016×.022" SS',
+                    'Nanceホールディングアーチ装着'
+                ],
+                'indigo'
+            );
+            planDiv.appendChild(phase2);
+            
+            // Phase 3
+            const phase3 = createPhase(
+                3,
+                `前歯後退（10-${duration-6}ヶ月）`,
+                [
+                    `上顎前歯を${(overjet - 2).toFixed(1)}mm後退`,
+                    `オーバージェット改善: ${overjet}mm → 2.5mm`,
+                    'En-masse retraction',
+                    '.017×.025" SS with closing loop'
+                ],
+                'purple'
+            );
+            planDiv.appendChild(phase3);
+            
+            // Phase 4
+            const phase4 = createPhase(
+                4,
+                `咬合確立・仕上げ（${duration-6}-${duration}ヶ月）`,
+                [
+                    molarRelation === 'CLASS_II' ? '臼歯関係をClass Iに改善' : '咬合の緊密化',
+                    `オーバーバイト調整: ${overbite}mm → 2.5mm`,
+                    'Class II elastics (3/16" 6oz)',
+                    '最終的な咬合調整'
+                ],
+                'green'
+            );
+            planDiv.appendChild(phase4);
+        }
+        
+        function createPhase(number, title, items, color) {
+            const phase = document.createElement('div');
+            phase.className = `border-l-4 border-${color}-500 pl-4 pb-4`;
+            phase.innerHTML = `
+                <h3 class="font-semibold flex items-center mb-2">
+                    <span class="w-8 h-8 bg-${color}-500 text-white rounded-full flex items-center justify-center mr-3 text-sm">${number}</span>
+                    ${title}
+                </h3>
+                <ul class="space-y-1 text-sm text-gray-600 ml-11">
+                    ${items.map(item => `<li>• ${item}</li>`).join('')}
+                </ul>
+            `;
+            return phase;
+        }
+        
+        function toggleMovementAnimation() {
+            const arrows = document.getElementById('movementArrows');
+            const button = event.target;
+            
+            if (arrows.style.display === 'none') {
+                arrows.style.display = 'block';
+                button.textContent = '移動シミュレーション非表示';
+                
+                // Animate teeth movement
+                animateTeethMovement();
+            } else {
+                arrows.style.display = 'none';
+                button.textContent = '移動シミュレーション表示';
+                resetTeethPosition();
+            }
+        }
+        
+        function animateTeethMovement() {
+            // Animate upper front teeth backward
+            const upperFront = ['11', '21', '12', '22', '13', '23'];
+            upperFront.forEach(tooth => {
+                const element = document.querySelector(`[data-tooth="${tooth}"]`);
+                if (element) {
+                    const currentX = parseInt(element.getAttribute('x'));
+                    const newX = tooth.includes('1') ? currentX - 20 : currentX + 20;
+                    element.style.transition = 'all 1s ease-in-out';
+                    element.setAttribute('x', newX);
+                }
+            });
+            
+            // Animate lower molars forward
+            const lowerMolars = ['46', '36', '45', '35'];
+            lowerMolars.forEach(tooth => {
+                const element = document.querySelector(`[data-tooth="${tooth}"]`);
+                if (element) {
+                    const currentX = parseInt(element.getAttribute('x'));
+                    const newX = tooth.includes('4') ? currentX + 15 : currentX - 15;
+                    element.style.transition = 'all 1s ease-in-out';
+                    element.setAttribute('x', newX);
+                }
+            });
+        }
+        
+        function resetTeethPosition() {
+            // Reset positions
+            const positions = {
+                '11': 290, '21': 330, '12': 250, '22': 370, '13': 210, '23': 410,
+                '46': 90, '36': 530, '45': 130, '35': 490
+            };
+            
+            Object.entries(positions).forEach(([tooth, x]) => {
+                const element = document.querySelector(`[data-tooth="${tooth}"]`);
+                if (element) {
+                    element.setAttribute('x', x);
+                }
+            });
+        }
+        
+        // Add tooth click interaction
+        document.querySelectorAll('.tooth').forEach(tooth => {
+            tooth.addEventListener('click', function() {
+                const toothNumber = this.getAttribute('data-tooth');
+                alert(`歯番: ${toothNumber}\n${this.classList.contains('extracted') ? '抜歯予定' : '保存'}`);
+            });
+        });
+    </script>
+</body>
+</html>
