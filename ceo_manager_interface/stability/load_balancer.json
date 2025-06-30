@@ -1,0 +1,44 @@
+{
+  "algorithm": "weighted_round_robin",
+  "health_check_interval": 30,
+  "agents": {
+    "dev1": {
+      "capacity": 100,
+      "current_load": 85,
+      "specialization": [
+        "analysis",
+        "verification"
+      ],
+      "weight": 1.0
+    },
+    "dev2": {
+      "capacity": 100,
+      "current_load": 90,
+      "specialization": [
+        "implementation",
+        "optimization"
+      ],
+      "weight": 1.2
+    },
+    "dev3": {
+      "capacity": 100,
+      "current_load": 80,
+      "specialization": [
+        "visualization",
+        "qa"
+      ],
+      "weight": 0.9
+    }
+  },
+  "distribution_rules": {
+    "max_load_difference": 20,
+    "prefer_specialization": true,
+    "emergency_overflow": true,
+    "auto_scale_threshold": 85
+  },
+  "task_queue": {
+    "pending": [],
+    "processing": [],
+    "completed": []
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "timestamp": "2025-06-30T12:11:36.926649",
+  "version": "2.0",
+  "incident_response": "enabled",
+  "thresholds": {
+    "cpu_critical": 90,
+    "memory_critical": 85,
+    "disk_critical": 90,
+    "response_time_critical": 2000,
+    "error_rate_critical": 5
+  },
+  "auto_actions": {
+    "auto_compact": true,
+    "auto_restart": false,
+    "auto_scale": true,
+    "auto_alert": true
+  },
+  "monitoring_intervals": {
+    "performance": 10,
+    "health_check": 30,
+    "deep_scan": 300
+  }
+}

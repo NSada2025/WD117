@@ -1,0 +1,71 @@
+{
+  "timestamp": "2025-06-30T17:23:03.419200",
+  "plan_id": "TP2024-001",
+  "patient_id": "PT2024-12345",
+  "analysis_type": "comprehensive_treatment_plan_evaluation",
+  "scores": {
+    "efficacy": {
+      "score": 75,
+      "details": [
+        "中程度の成功率: 75.0%",
+        "エビデンスレベル: B",
+        "中程度の改善期待: 65.0%"
+      ],
+      "category": "治療効果"
+    },
+    "risk": {
+      "score": 65,
+      "details": [
+        "中程度の副作用リスク: 35.0%",
+        "低い合併症リスク: 15.0%",
+        "禁忌事項あり: 2項目"
+      ],
+      "category": "リスク評価"
+    },
+    "duration": {
+      "score": 65,
+      "details": [
+        "長期治療: 120日",
+        "中頻度通院: 月4回",
+        "標準的な回復期間: 21日"
+      ],
+      "category": "治療期間"
+    },
+    "cost": {
+      "score": 66,
+      "details": [
+        "高コスト: ¥800,000",
+        "保険適用率: 70%",
+        "中程度の追加費用リスク: 20%"
+      ],
+      "category": "コスト"
+    },
+    "qol": {
+      "score": 70,
+      "details": [
+        "日常生活への影響: 中程度",
+        "痛みレベル: 中程度 (4/10)",
+        "標準的な社会復帰: 28日"
+      ],
+      "category": "生活の質"
+    }
+  },
+  "recommendations": [
+    "治療計画は妥当ですが、一部改善の余地があります"
+  ],
+  "summary": {
+    "overall_score": 69.1,
+    "evaluation_level": "標準",
+    "strongest_aspect": {
+      "category": "治療効果",
+      "score": 75
+    },
+    "weakest_aspect": {
+      "category": "治療期間",
+      "score": 65
+    },
+    "treatment_plan_name": "標準化学療法プロトコルA",
+    "evaluation_date": "2025-06-30 17:23:03"
+  },
+  "overall_score": 69.1
+}

@@ -1,0 +1,41 @@
+{
+  "model": "threshold_based",
+  "update_interval": 10,
+  "prediction_window": 1800,
+  "factors": {
+    "current_output_rate": 0.4,
+    "historical_pattern": 0.3,
+    "task_complexity": 0.2,
+    "time_of_day": 0.1
+  },
+  "thresholds": {
+    "dev1": {
+      "safe": 0.7,
+      "warning": 0.85,
+      "critical": 0.95
+    },
+    "dev2": {
+      "safe": 0.75,
+      "warning": 0.9,
+      "critical": 0.98
+    },
+    "dev3": {
+      "safe": 0.6,
+      "warning": 0.75,
+      "critical": 0.85
+    }
+  },
+  "preventive_actions": {
+    "warning": [
+      "Enable aggressive summarization",
+      "Defer non-critical outputs",
+      "Activate output chunking"
+    ],
+    "critical": [
+      "Force executive summary mode",
+      "Pause verbose operations",
+      "Redirect to visual outputs",
+      "Trigger preemptive compact"
+    ]
+  }
+}

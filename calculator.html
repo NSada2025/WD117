@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>簡単な計算機能</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .calculator {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 20px;
+            min-height: 30px;
+        }
+        .result.show {
+            background-color: #e8f5e9;
+            border: 2px solid #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h1>簡単な計算機能</h1>
+        
+        <div class="input-group">
+            <label for="num1">1つ目の数値:</label>
+            <input type="number" id="num1" placeholder="数値を入力">
+        </div>
+        
+        <div class="input-group">
+            <label for="num2">2つ目の数値:</label>
+            <input type="number" id="num2" placeholder="数値を入力">
+        </div>
+        
+        <button onclick="calculate()">計算する</button>
+        
+        <div id="result" class="result">
+            結果がここに表示されます
+        </div>
+    </div>
+
+    <script>
+        function calculate() {
+            // 入力値を取得
+            const num1 = parseFloat(document.getElementById('num1').value);
+            const num2 = parseFloat(document.getElementById('num2').value);
+            const resultDiv = document.getElementById('result');
+            
+            // 入力値のチェック
+            if (isNaN(num1) || isNaN(num2)) {
+                resultDiv.textContent = '有効な数値を入力してください';
+                resultDiv.classList.remove('show');
+                return;
+            }
+            
+            // 計算実行
+            const sum = num1 + num2;
+            
+            // 結果を表示
+            resultDiv.textContent = `${num1} + ${num2} = ${sum}`;
+            resultDiv.classList.add('show');
+        }
+        
+        // Enterキーでも計算できるようにする
+        document.getElementById('num1').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') calculate();
+        });
+        
+        document.getElementById('num2').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') calculate();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+{
+  "timestamp": "2025-06-30T17:32:28.504051",
+  "case_id": "ORTHO-2024-001",
+  "patient_id": "PT-2024-54321",
+  "evaluation_type": "orthodontic_clinical_evaluation",
+  "diagnosis": {
+    "malocclusion_class": "Class II Division 1（上顎前突・出っ歯）",
+    "skeletal_pattern": "骨格性II級（上顎前突傾向）",
+    "dental_issues": [
+      "叢生: 6mm",
+      "過蓋咬合"
+    ],
+    "complexity": "SIMPLE",
+    "special_considerations": [
+      "抜歯症例"
+    ]
+  },
+  "treatment_goals": {
+    "stated_goals": [
+      "理想的な咬合関係の確立",
+      "上顎前突の改善",
+      "審美性の向上",
+      "長期的な咬合の安定"
+    ],
+    "achievability": {
+      "理想的な咬合関係の確立": {
+        "goal": "理想的な咬合関係の確立",
+        "feasibility": "high",
+        "challenges": [],
+        "success_factors": [
+          "適切な治療計画により達成可能"
+        ]
+      },
+      "上顎前突の改善": {
+        "goal": "上顎前突の改善",
+        "feasibility": "high",
+        "challenges": [],
+        "success_factors": []
+      },
+      "審美性の向上": {
+        "goal": "審美性の向上",
+        "feasibility": "high",
+        "challenges": [],
+        "success_factors": []
+      },
+      "長期的な咬合の安定": {
+        "goal": "長期的な咬合の安定",
+        "feasibility": "high",
+        "challenges": [],
+        "success_factors": []
+      }
+    },
+    "priority_assessment": [
+      {
+        "priority": 1,
+        "goal": "理想的な咬合関係の確立",
+        "rationale": "機能的な問題の解決が最優先"
+      },
+      {
+        "priority": 2,
+        "goal": "長期的な咬合の安定",
+        "rationale": "機能的な問題の解決が最優先"
+      },
+      {
+        "priority": 3,
+        "goal": "審美性の向上",
+        "rationale": "患者の主訴に対応"
+      },
+      {
+        "priority": 4,
+        "goal": "上顎前突の改善",
+        "rationale": "総合的な治療目標"
+      }
+    ],
+    "goal_validity": {
+      "missing_essential_goals": [],
+      "unrealistic_goals": [],
+      "overall_validity": "妥当"
+    }
+  },
+  "treatment_plan": {
+    "appliance_type": "fixed_braces",
+    "estimated_duration": {
+      "minimum_months": 15,
+      "maximum_months": 21,
+      "average_months": 18.0,
+      "modifying_factors": [
+        "抜歯スペースの閉鎖"
+      ]
+    },
+    "phase_planning": {
+      "number_of_phases": 3,
+      "phase_details": [
+        {
+          "phase": 1,
+          "name": "初期治療・レベリング",
+          "duration": "4-6ヶ月",
+          "objectives": [
+            "歯列のレベリング",
+            "叢生の解消",
+            "初期の歯の配列"
+          ]
+        },
+        {
+          "phase": 2,
+          "name": "スペースクロージング",
+          "duration": "6-8ヶ月",
+          "objectives": [
+            "抜歯スペースの閉鎖",
+            "犬歯の遠心移動"
+          ]
+        },
+        {
+          "phase": 3,
+          "name": "仕上げ・ディテーリング",
+          "duration": "3-4ヶ月",
+          "objectives": [
+            "咬合の緊密化",
+            "歯軸の最終調整",
+            "審美性の最適化"
+          ]
+        }
+      ],
+      "appropriateness": "appropriate"
+    },
+    "mechanics_evaluation": {
+      "wire_sequence": "appropriate",
+      "force_levels": "optimal",
+      "anchorage_planning": "adequate",
+      "special_considerations": []
+    },
+    "efficiency_score": 75
+  },
+  "risk_assessment": {
+    "identified_risks": [
+      {
+        "factor": "歯ぎしり",
+        "severity": "moderate"
+      }
+    ],
+    "risk_level": "low",
+    "mitigation_strategies": {},
+    "monitoring_requirements": [
+      "6-8週ごとの診察",
+      "年1回のX線撮影",
+      "通常のフォローアップ"
+    ]
+  },
+  "prognosis": {
+    "success_probability": "high",
+    "stability_prediction": "good",
+    "retention_requirements": {
+      "type": "固定式保定装置（下顎）+ 可撤式保定装置（上顎）",
+      "duration": "最低2年間の常時装着、その後夜間のみ",
+      "follow_up": "3ヶ月ごとの定期チェック"
+    },
+    "long_term_considerations": []
+  },
+  "recommendations": []
+}

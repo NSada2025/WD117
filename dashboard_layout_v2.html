@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEO-Manager Real-Time Dashboard v2</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background: #f5f7fa;
+            color: #2c3e50; 
+            padding: 20px;
+        }
+        
+        /* New sidebar navigation */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            height: 100vh;
+            background: #2c3e50;
+            padding: 20px;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar.collapsed {
+            width: 60px;
+        }
+        
+        .sidebar h2 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+        
+        .sidebar.collapsed h2 {
+            display: none;
+        }
+        
+        .nav-item {
+            display: block;
+            padding: 12px;
+            margin: 5px 0;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .nav-item.active {
+            background: #3498db;
+        }
+        
+        /* Main content area with sidebar */
+        .main-content {
+            margin-left: 270px;
+            transition: all 0.3s ease;
+        }
+        
+        .main-content.expanded {
+            margin-left: 80px;
+        }
+        
+        /* Toggle button */
+        .sidebar-toggle {
+            position: fixed;
+            left: 260px;
+            top: 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-toggle.shifted {
+            left: 70px;
+        }
+        
+        /* Updated header */
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2em;
+        }
+        
+        /* New layout: 2-column primary + secondary */
+        .dashboard { 
+            display: grid; 
+            grid-template-columns: 2fr 1fr;
+            gap: 20px; 
+        }
+        
+        .primary-column {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .secondary-column {
+            display: grid;
+            gap: 20px;
+            align-content: start;
+        }
+        
+        /* Updated card styles */
+        .card { 
+            background: white;
+            border-radius: 10px; 
+            padding: 25px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        }
+        
+        .card h2 { 
+            margin-bottom: 20px; 
+            color: #2c3e50; 
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* Large overview card */
+        .overview-card {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+            color: white;
+        }
+        
+        .overview-card h2 {
+            color: white;
+            border-color: rgba(255,255,255,0.3);
+        }
+        
+        /* Updated status indicators */
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .status-active { background: #27ae60; }
+        .status-warning { background: #f39c12; }
+        .status-error { background: #e74c3c; }
+        
+        /* Improved progress bars */
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #ecf0f1;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            transition: width 0.5s ease;
+            position: relative;
+        }
+        
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        /* Updated metrics */
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 12px 0;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 3px solid #3498db;
+        }
+        
+        /* New stat cards */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        
+        /* Updated alerts */
+        .alert {
+            padding: 15px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border-left: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .alert-icon {
+            font-size: 1.2em;
+        }
+        
+        .alert-info { 
+            border-color: #3498db; 
+            background: #ebf5fb;
+            color: #2980b9;
+        }
+        .alert-success { 
+            border-color: #27ae60; 
+            background: #eafaf1;
+            color: #229954;
+        }
+        .alert-warning { 
+            border-color: #f39c12; 
+            background: #fef9e7;
+            color: #d68910;
+        }
+        
+        /* Updated buttons */
+        .quick-action {
+            background: #3498db;
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            margin: 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .quick-action:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+        
+        .quick-action.danger {
+            background: #e74c3c;
+        }
+        
+        .quick-action.danger:hover {
+            background: #c0392b;
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+        }
+        
+        /* Live feed */
+        .live-feed {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .feed-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 5px;
+            font-size: 0.9em;
+            border-left: 3px solid #3498db;
+        }
+        
+        .feed-time {
+            color: #7f8c8d;
+            font-size: 0.8em;
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 1024px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0 !important; }
+            .sidebar-toggle { display: none; }
+            .dashboard { 
+                grid-template-columns: 1fr;
+            }
+            .overview-card {
+                grid-column: 1;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .header { 
+                flex-direction: column; 
+                gap: 15px;
+                text-align: center;
+            }
+            .stat-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <script>
+        // Toggle sidebar
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            const toggle = document.querySelector('.sidebar-toggle');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+            toggle.classList.toggle('shifted');
+        }
+        
+        // Auto-refresh with countdown
+        let refreshCountdown = 30;
+        setInterval(() => {
+            refreshCountdown--;
+            const indicator = document.querySelector('.refresh-timer');
+            if (indicator) {
+                indicator.textContent = `Refresh in: ${refreshCountdown}s`;
+            }
+            if (refreshCountdown <= 0) {
+                location.reload();
+            }
+        }, 1000);
+        
+        // Update timestamp
+        function updateTimestamp() {
+            const timestamp = document.querySelector('.timestamp');
+            if (timestamp) {
+                const now = new Date();
+                timestamp.textContent = now.toLocaleString();
+            }
+        }
+        
+        // Add live feed item
+        function addFeedItem(message) {
+            const feed = document.querySelector('.live-feed');
+            const item = document.createElement('div');
+            item.className = 'feed-item';
+            const time = new Date().toLocaleTimeString();
+            item.innerHTML = `
+                <div class="feed-time">${time}</div>
+                <div>${message}</div>
+            `;
+            feed.insertBefore(item, feed.firstChild);
+        }
+        
+        window.onload = function() {
+            updateTimestamp();
+            // Simulate live updates
+            setTimeout(() => addFeedItem('System health check completed'), 2000);
+            setTimeout(() => addFeedItem('dev2 completed task #42'), 5000);
+        };
+    </script>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+        <h2>Navigation</h2>
+        <a href="#overview" class="nav-item active">📊 Overview</a>
+        <a href="#projects" class="nav-item">🚀 Projects</a>
+        <a href="#team" class="nav-item">👥 Team</a>
+        <a href="#metrics" class="nav-item">📈 Metrics</a>
+        <a href="#alerts" class="nav-item">🔔 Alerts</a>
+        <a href="#actions" class="nav-item">⚡ Actions</a>
+    </nav>
+    
+    <!-- Sidebar Toggle Button -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+    
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>CEO-Manager Command Center</h1>
+                <div class="timestamp" style="color: #7f8c8d; font-size: 0.9em;"></div>
+            </div>
+            <div style="text-align: right;">
+                <div class="refresh-timer" style="color: #7f8c8d; font-size: 0.9em;">Refresh in: 30s</div>
+                <div style="margin-top: 5px;">
+                    <span class="status-indicator status-active"></span>
+                    <span style="color: #27ae60; font-weight: bold;">All Systems Operational</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="dashboard">
+            <!-- Primary Column -->
+            <div class="primary-column">
+                <!-- Overview Card -->
+                <div class="card overview-card">
+                    <h2>📊 Executive Overview</h2>
+                    <div class="stat-grid">
+                        <div class="stat-box" style="background: rgba(255,255,255,0.1);">
+                            <div class="stat-value" style="color: white;">3</div>
+                            <div class="stat-label" style="color: rgba(255,255,255,0.8);">Active Projects</div>
+                        </div>
+                        <div class="stat-box" style="background: rgba(255,255,255,0.1);">
+                            <div class="stat-value" style="color: white;">85%</div>
+                            <div class="stat-label" style="color: rgba(255,255,255,0.8);">Overall Progress</div>
+                        </div>
+                        <div class="stat-box" style="background: rgba(255,255,255,0.1);">
+                            <div class="stat-value" style="color: white;">12</div>
+                            <div class="stat-label" style="color: rgba(255,255,255,0.8);">Tasks Today</div>
+                        </div>
+                        <div class="stat-box" style="background: rgba(255,255,255,0.1);">
+                            <div class="stat-value" style="color: white;">98%</div>
+                            <div class="stat-label" style="color: rgba(255,255,255,0.8);">Team Efficiency</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Project Status Card -->
+                <div class="card">
+                    <h2>🚀 Active Projects</h2>
+                    <div style="margin-bottom: 20px;">
+                        <strong>Neuroscience Analysis System</strong>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 90%"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.9em; color: #7f8c8d;">
+                            <span>Phase: Interface Optimization</span>
+                            <span>90% Complete</span>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <strong>Mobile Dashboard Development</strong>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 65%"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.9em; color: #7f8c8d;">
+                            <span>Phase: UI Implementation</span>
+                            <span>65% Complete</span>
+                        </div>
+                    </div>
+                    <div>
+                        <strong>System Performance Optimization</strong>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 40%"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.9em; color: #7f8c8d;">
+                            <span>Phase: Analysis</span>
+                            <span>40% Complete</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Team Performance Card -->
+                <div class="card">
+                    <h2>👥 Team Performance Matrix</h2>
+                    <div class="metric">
+                        <span><strong>dev1</strong> - Frontend Specialist</span>
+                        <span><span class="status-indicator status-active"></span>Active</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 85%"></div>
+                    </div>
+                    
+                    <div class="metric">
+                        <span><strong>dev2</strong> - Backend Engineer</span>
+                        <span><span class="status-indicator status-active"></span>Active</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 90%"></div>
+                    </div>
+                    
+                    <div class="metric">
+                        <span><strong>dev3</strong> - QA & Documentation</span>
+                        <span><span class="status-indicator status-warning"></span>Testing</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 95%"></div>
+                    </div>
+                    
+                    <div style="margin-top: 20px; padding: 15px; background: #ebf5fb; border-radius: 8px;">
+                        <strong>Next Milestone:</strong> Complete interface testing (Est. 2 hours)
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Secondary Column -->
+            <div class="secondary-column">
+                <!-- System Health Card -->
+                <div class="card">
+                    <h2>💻 System Health</h2>
+                    <div class="metric">
+                        <span>CPU Usage</span>
+                        <span><strong>32%</strong></span>
+                    </div>
+                    <div class="metric">
+                        <span>Memory</span>
+                        <span><strong>4.2/8 GB</strong></span>
+                    </div>
+                    <div class="metric">
+                        <span>Response Time</span>
+                        <span style="color: #27ae60;"><strong>&lt; 200ms</strong></span>
+                    </div>
+                    <div class="metric">
+                        <span>Uptime</span>
+                        <span><strong>99.98%</strong></span>
+                    </div>
+                </div>
+                
+                <!-- Recent Alerts Card -->
+                <div class="card">
+                    <h2>🔔 Recent Alerts</h2>
+                    <div class="alert alert-success">
+                        <span class="alert-icon">✅</span>
+                        <div>
+                            <strong>SUCCESS</strong><br>
+                            Layout optimization completed
+                        </div>
+                    </div>
+                    <div class="alert alert-info">
+                        <span class="alert-icon">ℹ️</span>
+                        <div>
+                            <strong>INFO</strong><br>
+                            Scheduled maintenance in 48h
+                        </div>
+                    </div>
+                    <div class="alert alert-warning">
+                        <span class="alert-icon">⚠️</span>
+                        <div>
+                            <strong>WARNING</strong><br>
+                            High memory usage on dev3
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions Card -->
+                <div class="card">
+                    <h2>⚡ Quick Actions</h2>
+                    <button class="quick-action" onclick="alert('Generating executive report...')">
+                        📄 Generate Report
+                    </button>
+                    <button class="quick-action" onclick="alert('Broadcasting message to team...')">
+                        📢 Team Broadcast
+                    </button>
+                    <button class="quick-action" onclick="alert('Reallocating resources...')">
+                        🔄 Reallocate Resources
+                    </button>
+                    <button class="quick-action" onclick="alert('Running diagnostics...')">
+                        🔍 Run Diagnostics
+                    </button>
+                    <button class="quick-action danger" onclick="confirm('Emergency stop all operations?')">
+                        🛑 Emergency Stop
+                    </button>
+                </div>
+                
+                <!-- Live Activity Feed -->
+                <div class="card">
+                    <h2>📡 Live Activity Feed</h2>
+                    <div class="live-feed">
+                        <div class="feed-item">
+                            <div class="feed-time">10:45:23</div>
+                            <div>System initialized successfully</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

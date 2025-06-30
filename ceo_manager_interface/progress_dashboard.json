@@ -1,0 +1,156 @@
+{
+  "metadata": {
+    "created": "2025-06-30T11:55:16.776376",
+    "version": "1.0",
+    "auto_refresh": true,
+    "refresh_interval": 30
+  },
+  "executive_summary": {
+    "total_active_projects": 3,
+    "completion_rate": "85%",
+    "critical_issues": 0,
+    "team_efficiency": "High",
+    "next_deliverable": {
+      "name": "Phase 2 Optimization",
+      "eta": "2 hours",
+      "confidence": "95%"
+    },
+    "resource_utilization": {
+      "dev1": "85%",
+      "dev2": "90%",
+      "dev3": "80%"
+    }
+  },
+  "project_overview": {
+    "neuroscience_analysis": {
+      "name": "Multi-Agent Neuroscience Analysis",
+      "status": "active",
+      "progress": 90,
+      "phase": "GitHub Integration & Optimization",
+      "team": [
+        "dev1",
+        "dev2",
+        "dev3"
+      ],
+      "critical_path": [
+        "CEO-Manager interface optimization",
+        "Real-time dashboard implementation",
+        "Mobile UI/UX development"
+      ],
+      "blockers": [],
+      "next_milestone": "Interface optimization complete",
+      "estimated_completion": "2025-06-30 13:55:16.776496"
+    },
+    "workspace_optimization": {
+      "name": "Workspace Performance Optimization",
+      "status": "completed",
+      "progress": 100,
+      "phase": "Deployment Ready",
+      "achievements": [
+        "Unified analysis pipeline",
+        "Performance caching system",
+        "GitHub Actions CI/CD"
+      ]
+    }
+  },
+  "team_performance": {
+    "dev1": {
+      "specialization": "Data Analysis & Verification",
+      "current_task": "Analysis pipeline verification",
+      "productivity": "High",
+      "workload": "85%",
+      "estimated_completion": "1 hour",
+      "recent_achievements": [
+        "Critical timing correction discovery",
+        "B/H mapping verification"
+      ]
+    },
+    "dev2": {
+      "specialization": "Implementation & Optimization",
+      "current_task": "CEO-Manager interface development",
+      "productivity": "Very High",
+      "workload": "90%",
+      "estimated_completion": "2 hours",
+      "recent_achievements": [
+        "Unified analysis pipeline",
+        "Performance cache system",
+        "GitHub repository setup"
+      ]
+    },
+    "dev3": {
+      "specialization": "Visualization & QA",
+      "current_task": "Mobile UI/UX optimization",
+      "productivity": "High",
+      "workload": "80%",
+      "estimated_completion": "1.5 hours",
+      "recent_achievements": [
+        "MATLAB visualization fixes",
+        "Quality assurance protocols"
+      ]
+    }
+  },
+  "system_metrics": {
+    "response_time": "< 0.5s",
+    "system_load": "Normal",
+    "memory_usage": "65%",
+    "active_processes": 12,
+    "communication_latency": "< 100ms",
+    "error_rate": "0%",
+    "uptime": "99.9%",
+    "last_backup": "2025-06-30 10:55:16.776850"
+  },
+  "alerts_notifications": [
+    {
+      "type": "info",
+      "priority": "high",
+      "message": "CEO-Manager interface optimization in progress",
+      "timestamp": "2025-06-30T11:55:16.776858",
+      "action_required": false
+    },
+    {
+      "type": "success",
+      "priority": "medium",
+      "message": "GitHub repository successfully established",
+      "timestamp": "2025-06-30T11:45:16.776862",
+      "action_required": false
+    }
+  ],
+  "quick_actions": {
+    "emergency": [
+      {
+        "name": "Emergency Stop",
+        "command": "emergency_stop",
+        "description": "Stop all non-critical operations"
+      },
+      {
+        "name": "Priority Override",
+        "command": "priority_override",
+        "description": "Override current priorities"
+      }
+    ],
+    "communication": [
+      {
+        "name": "Team Broadcast",
+        "command": "team_broadcast",
+        "description": "Send message to all team members"
+      },
+      {
+        "name": "Status Request",
+        "command": "status_request",
+        "description": "Request immediate status from all agents"
+      }
+    ],
+    "project_management": [
+      {
+        "name": "New Project",
+        "command": "new_project",
+        "description": "Initiate new project workflow"
+      },
+      {
+        "name": "Resource Reallocation",
+        "command": "reallocate_resources",
+        "description": "Optimize team resource allocation"
+      }
+    ]
+  }
+}

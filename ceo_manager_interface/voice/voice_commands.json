@@ -1,0 +1,46 @@
+{
+  "navigation": {
+    "show dashboard": "navigate_dashboard",
+    "open projects": "navigate_projects",
+    "team status": "navigate_team",
+    "show alerts": "navigate_alerts",
+    "go to settings": "navigate_settings"
+  },
+  "project_management": {
+    "new project": "create_new_project",
+    "project status": "show_project_status",
+    "assign task": "assign_task_to_team",
+    "update priority": "update_task_priority",
+    "schedule meeting": "schedule_team_meeting"
+  },
+  "team_communication": {
+    "team broadcast": "initiate_team_broadcast",
+    "message dev one": "message_dev1",
+    "message dev two": "message_dev2",
+    "message dev three": "message_dev3",
+    "message manager": "message_manager",
+    "status request": "request_team_status",
+    "emergency meeting": "call_emergency_meeting"
+  },
+  "system_control": {
+    "system status": "show_system_status",
+    "refresh dashboard": "refresh_dashboard",
+    "backup data": "initiate_backup",
+    "emergency stop": "emergency_stop_all",
+    "pause all tasks": "pause_all_operations",
+    "resume operations": "resume_all_operations"
+  },
+  "reports_analytics": {
+    "generate report": "generate_executive_report",
+    "show metrics": "display_performance_metrics",
+    "export data": "export_analytics_data",
+    "schedule report": "schedule_automated_report"
+  },
+  "quick_actions": {
+    "what's the status": "quick_status_overview",
+    "any problems": "check_critical_alerts",
+    "team progress": "team_progress_summary",
+    "next milestone": "show_next_milestone",
+    "resource allocation": "show_resource_usage"
+  }
+}

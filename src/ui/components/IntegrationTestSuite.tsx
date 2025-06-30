@@ -6,6 +6,7 @@ import {
   WireSequenceResponse, 
   ElasticPrescriptionResponse 
 } from '../services/apiService';
+import { mockApiService } from '../services/mockApiService';
 import { generateCompleteTestDataset } from '../utils/testDataGenerator';
 import { LoadingSpinner, Toast } from './UIUtilities';
 import { DetailedTreatmentPlan, ToothMovement, WireSequence, ElasticConfiguration } from '../types';
@@ -22,9 +23,13 @@ export const IntegrationTestSuite: React.FC = () => {
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [apiHealth, setApiHealth] = useState<boolean | null>(null);
+  const [useMockApi, setUseMockApi] = useState(false);
   const [testData, setTestData] = useState<any>(null);
   const [treatmentPlan, setTreatmentPlan] = useState<DetailedTreatmentPlan | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  // 使用するAPIサービスを選択
+  const currentApiService = useMockApi ? mockApiService : apiService;
 
   const tests: Array<{
     name: string;
@@ -73,22 +78,36 @@ export const IntegrationTestSuite: React.FC = () => {
   }, []);
 
   async function checkApiHealth() {
-    const isHealthy = await apiService.checkApiHealth();
+    let isHealthy = await apiService.checkApiHealth();
     setApiHealth(isHealthy);
+    
+    // 実APIが利用できない場合、自動的にモックAPIに切り替え
+    if (!isHealthy) {
+      setUseMockApi(true);
+      isHealthy = await mockApiService.checkApiHealth();
+      setToast({ 
+        message: '実APIが利用できないため、モックAPIを使用します', 
+        type: 'warning' as any 
+      });
+    }
   }
 
   async function testApiHealth(): Promise<void> {
-    const isHealthy = await apiService.checkApiHealth();
-    setApiHealth(isHealthy);
-    if (!isHealthy) {
-      throw new Error('APIサーバーに接続できません');
+    const isHealthy = await currentApiService.checkApiHealth();
+    if (useMockApi) {
+      setApiHealth(true);
+    } else {
+      setApiHealth(isHealthy);
+      if (!isHealthy) {
+        throw new Error('APIサーバーに接続できません');
+      }
     }
   }
 
   async function testToothMovementsApi(): Promise<void> {
     if (!testData) throw new Error('テストデータが初期化されていません');
     
-    const result = await apiService.getToothMovements(testData.patient.id, testData.patient.age);
+    const result = await currentApiService.getToothMovements(testData.patient.id, testData.patient.age);
     
     if (result.error) {
       throw new Error(`歯牙移動API呼び出し失敗: ${result.error}`);
@@ -116,7 +135,7 @@ export const IntegrationTestSuite: React.FC = () => {
   async function testWireSequenceApi(): Promise<void> {
     if (!testData) throw new Error('テストデータが初期化されていません');
     
-    const result = await apiService.getWireSequence(testData.patient.id, testData.patient.age);
+    const result = await currentApiService.getWireSequence(testData.patient.id, testData.patient.age);
     
     if (result.error) {
       throw new Error(`ワイヤーシーケンスAPI呼び出し失敗: ${result.error}`);
@@ -149,7 +168,7 @@ export const IntegrationTestSuite: React.FC = () => {
   async function testElasticPrescriptionApi(): Promise<void> {
     if (!testData) throw new Error('テストデータが初期化されていません');
     
-    const result = await apiService.getElasticPrescription(
+    const result = await currentApiService.getElasticPrescription(
       testData.patient.id, 
       '空隙閉鎖',
       {
@@ -194,9 +213,9 @@ export const IntegrationTestSuite: React.FC = () => {
     
     // APIからデータを取得
     const [toothResult, wireResult, elasticResult] = await Promise.all([
-      apiService.getToothMovements(testData.patient.id, testData.patient.age),
-      apiService.getWireSequence(testData.patient.id, testData.patient.age),
-      apiService.getElasticPrescription(testData.patient.id, '配列')
+      currentApiService.getToothMovements(testData.patient.id, testData.patient.age),
+      currentApiService.getWireSequence(testData.patient.id, testData.patient.age),
+      currentApiService.getElasticPrescription(testData.patient.id, '配列')
     ]);
 
     // エラーチェック
@@ -407,8 +426,17 @@ export const IntegrationTestSuite: React.FC = () => {
               apiHealth === false ? 'bg-red-100 text-red-700' :
               'bg-gray-100 text-gray-700'
             }`}>
-              API: {apiHealth === true ? '正常' : apiHealth === false ? '異常' : '確認中'}
+              {useMockApi ? 'Mock API' : 'Real API'}: {apiHealth === true ? '正常' : apiHealth === false ? '異常' : '確認中'}
             </div>
+            <button
+              onClick={() => {
+                setUseMockApi(!useMockApi);
+                checkApiHealth();
+              }}
+              className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded text-sm"
+            >
+              {useMockApi ? 'Real APIに切替' : 'Mock APIに切替'}
+            </button>
             <button
               onClick={runAllTests}
               disabled={isRunning}

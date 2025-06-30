@@ -1,0 +1,95 @@
+{
+  "alert_config": {
+    "enabled": true,
+    "real_time": true,
+    "notification_channels": [
+      "dashboard",
+      "file",
+      "console"
+    ],
+    "priority_levels": [
+      "low",
+      "medium",
+      "high",
+      "critical"
+    ]
+  },
+  "active_alerts": [
+    {
+      "id": "018ebfc9",
+      "timestamp": "2025-06-30T11:55:16.792185",
+      "type": "info",
+      "priority": "high",
+      "message": "Alert system initialized and operational",
+      "context": {},
+      "status": "active",
+      "acknowledged": false
+    }
+  ],
+  "alert_history": [],
+  "monitoring_rules": {
+    "performance_degradation": {
+      "metric": "response_time",
+      "threshold": "> 2s",
+      "action": "alert_ceo_manager",
+      "priority": "high"
+    },
+    "team_member_inactive": {
+      "metric": "last_activity",
+      "threshold": "> 30min",
+      "action": "status_check",
+      "priority": "medium"
+    },
+    "critical_error": {
+      "metric": "error_count",
+      "threshold": "> 0",
+      "action": "immediate_attention",
+      "priority": "critical"
+    },
+    "project_delay": {
+      "metric": "milestone_delay",
+      "threshold": "> 2h",
+      "action": "resource_reallocation",
+      "priority": "high"
+    }
+  },
+  "escalation_matrix": {
+    "low": {
+      "notify": [
+        "dashboard"
+      ],
+      "response_time": "1 hour",
+      "auto_resolve": true
+    },
+    "medium": {
+      "notify": [
+        "dashboard",
+        "manager"
+      ],
+      "response_time": "30 minutes",
+      "auto_resolve": false
+    },
+    "high": {
+      "notify": [
+        "dashboard",
+        "manager",
+        "ceo"
+      ],
+      "response_time": "15 minutes",
+      "auto_resolve": false,
+      "escalate_after": "30 minutes"
+    },
+    "critical": {
+      "notify": [
+        "dashboard",
+        "manager",
+        "ceo",
+        "all_team"
+      ],
+      "response_time": "immediate",
+      "auto_resolve": false,
+      "escalate_after": "5 minutes",
+      "emergency_protocol": true
+    }
+  }
+}

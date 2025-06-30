@@ -1,0 +1,96 @@
+{
+  "version": "1.0",
+  "created": "2025-06-30T12:11:36.931157",
+  "incident_types": {
+    "auto_compact": {
+      "description": "Automatic screen compaction triggered",
+      "severity": "medium",
+      "auto_response": [
+        "Log incident with timestamp",
+        "Notify affected users",
+        "Monitor system stability",
+        "Elevate auto-compact priority"
+      ],
+      "prevention": [
+        "Proactive resource monitoring",
+        "Periodic memory cleanup",
+        "Load balancing across agents"
+      ]
+    },
+    "high_cpu": {
+      "severity": "high",
+      "threshold": 90,
+      "auto_response": [
+        "Identify resource-intensive processes",
+        "Pause non-critical operations",
+        "Alert CEO and Manager",
+        "Initiate load distribution"
+      ]
+    },
+    "memory_leak": {
+      "severity": "critical",
+      "threshold": 95,
+      "auto_response": [
+        "Emergency memory dump",
+        "Force garbage collection",
+        "Restart affected services",
+        "Full system diagnostic"
+      ]
+    },
+    "response_degradation": {
+      "severity": "medium",
+      "threshold": "2s",
+      "auto_response": [
+        "Cache optimization",
+        "Query optimization",
+        "Connection pool adjustment",
+        "Performance profiling"
+      ]
+    }
+  },
+  "escalation_matrix": {
+    "low": {
+      "notify": [
+        "system_log"
+      ],
+      "response_time": "1 hour"
+    },
+    "medium": {
+      "notify": [
+        "manager",
+        "dashboard"
+      ],
+      "response_time": "30 minutes"
+    },
+    "high": {
+      "notify": [
+        "ceo",
+        "manager",
+        "all_devs"
+      ],
+      "response_time": "15 minutes"
+    },
+    "critical": {
+      "notify": [
+        "all",
+        "emergency_protocol"
+      ],
+      "response_time": "immediate",
+      "auto_mitigate": true
+    }
+  },
+  "recovery_procedures": {
+    "auto_compact_recovery": [
+      "Wait for compact completion",
+      "Verify system stability",
+      "Resume normal operations",
+      "Document incident details"
+    ],
+    "service_restart": [
+      "Graceful shutdown attempt",
+      "Force stop if needed",
+      "Clear temporary files",
+      "Restart with monitoring"
+    ]
+  }
+}

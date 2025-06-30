@@ -1,0 +1,249 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEO-Manager Real-Time Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white; 
+            padding: 20px;
+        }
+        .dashboard { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 20px; 
+        }
+        .card { 
+            background: rgba(255,255,255,0.1); 
+            border-radius: 15px; 
+            padding: 20px; 
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s ease;
+        }
+        .card:hover { transform: translateY(-5px); }
+        .card h2 { 
+            margin-bottom: 15px; 
+            color: #ffffff; 
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-active { background: #4CAF50; }
+        .status-warning { background: #FF9800; }
+        .status-error { background: #F44336; }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            transition: width 0.3s ease;
+        }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 8px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 5px;
+        }
+        .alert {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+        .alert-info { border-color: #2196F3; background: rgba(33,150,243,0.1); }
+        .alert-success { border-color: #4CAF50; background: rgba(76,175,80,0.1); }
+        .alert-warning { border-color: #FF9800; background: rgba(255,152,0,0.1); }
+        .quick-action {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        .quick-action:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(76,175,80,0.4);
+        }
+        .refresh-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(76,175,80,0.9);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        @media (max-width: 768px) {
+            .dashboard { grid-template-columns: 1fr; }
+            body { padding: 10px; }
+        }
+    </style>
+    <script>
+        // Auto-refresh dashboard every 30 seconds
+        setInterval(() => {
+            location.reload();
+        }, 30000);
+        
+        // Update refresh indicator
+        function updateRefreshIndicator() {
+            const indicator = document.querySelector('.refresh-indicator');
+            if (indicator) {
+                const now = new Date();
+                indicator.textContent = `Last Update: ${now.toLocaleTimeString()}`;
+            }
+        }
+        
+        window.onload = updateRefreshIndicator;
+    </script>
+</head>
+<body>
+    <div class="refresh-indicator">Auto-refresh: ON</div>
+    
+    <h1 style="text-align: center; margin-bottom: 30px; font-size: 2.5em;">
+        🎯 CEO-Manager Command Center
+    </h1>
+    
+    <div class="dashboard">
+        <!-- Executive Summary Card -->
+        <div class="card">
+            <h2>📊 Executive Summary</h2>
+            <div class="metric">
+                <span>Active Projects:</span>
+                <span><strong>3</strong></span>
+            </div>
+            <div class="metric">
+                <span>Completion Rate:</span>
+                <span><strong>85%</strong></span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 85%"></div>
+            </div>
+            <div class="metric">
+                <span>Team Efficiency:</span>
+                <span><span class="status-indicator status-active"></span><strong>High</strong></span>
+            </div>
+            <div class="metric">
+                <span>Critical Issues:</span>
+                <span><strong>0</strong></span>
+            </div>
+        </div>
+        
+        <!-- Project Status Card -->
+        <div class="card">
+            <h2>🚀 Project Status</h2>
+            <div style="margin-bottom: 15px;">
+                <strong>Neuroscience Analysis System</strong>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 90%"></div>
+                </div>
+                <small>Phase: CEO-Manager Interface Optimization</small>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Workspace Optimization</strong>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%"></div>
+                </div>
+                <small>Status: ✅ Completed</small>
+            </div>
+        </div>
+        
+        <!-- Team Performance Card -->
+        <div class="card">
+            <h2>👥 Team Performance</h2>
+            <div class="metric">
+                <span>dev1 (Analysis):</span>
+                <span><span class="status-indicator status-active"></span>85%</span>
+            </div>
+            <div class="metric">
+                <span>dev2 (Implementation):</span>
+                <span><span class="status-indicator status-active"></span>90%</span>
+            </div>
+            <div class="metric">
+                <span>dev3 (Visualization):</span>
+                <span><span class="status-indicator status-active"></span>80%</span>
+            </div>
+            <div style="margin-top: 15px;">
+                <small><strong>Next Milestone:</strong> Interface optimization (2h)</small>
+            </div>
+        </div>
+        
+        <!-- System Metrics Card -->
+        <div class="card">
+            <h2>⚡ System Metrics</h2>
+            <div class="metric">
+                <span>Response Time:</span>
+                <span><strong>&lt; 0.5s</strong></span>
+            </div>
+            <div class="metric">
+                <span>System Load:</span>
+                <span><span class="status-indicator status-active"></span>Normal</span>
+            </div>
+            <div class="metric">
+                <span>Memory Usage:</span>
+                <span><strong>65%</strong></span>
+            </div>
+            <div class="metric">
+                <span>Error Rate:</span>
+                <span><span class="status-indicator status-active"></span>0%</span>
+            </div>
+        </div>
+        
+        <!-- Alerts & Notifications Card -->
+        <div class="card">
+            <h2>🔔 Alerts & Notifications</h2>
+            <div class="alert alert-info">
+                <strong>INFO:</strong> CEO-Manager interface optimization in progress
+            </div>
+            <div class="alert alert-success">
+                <strong>SUCCESS:</strong> GitHub repository successfully established
+            </div>
+        </div>
+        
+        <!-- Quick Actions Card -->
+        <div class="card">
+            <h2>⚡ Quick Actions</h2>
+            <div style="margin-bottom: 15px;">
+                <strong>Communication:</strong><br>
+                <button class="quick-action" onclick="alert('Team broadcast initiated')">Team Broadcast</button>
+                <button class="quick-action" onclick="alert('Status request sent')">Status Request</button>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Project Management:</strong><br>
+                <button class="quick-action" onclick="alert('New project workflow started')">New Project</button>
+                <button class="quick-action" onclick="alert('Resource reallocation initiated')">Reallocate Resources</button>
+            </div>
+            <div>
+                <strong>Emergency:</strong><br>
+                <button class="quick-action" style="background: linear-gradient(45deg, #F44336, #d32f2f)" onclick="confirm('Emergency stop all operations?')">Emergency Stop</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+        

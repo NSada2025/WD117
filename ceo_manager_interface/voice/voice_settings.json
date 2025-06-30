@@ -1,0 +1,32 @@
+{
+  "recognition": {
+    "language": "en-US",
+    "continuous": true,
+    "interim_results": true,
+    "max_alternatives": 3,
+    "confidence_threshold": 0.7
+  },
+  "speech_synthesis": {
+    "voice": "professional_female",
+    "rate": 1.0,
+    "pitch": 1.0,
+    "volume": 0.8,
+    "language": "en-US"
+  },
+  "activation": {
+    "wake_words": [
+      "hey commander",
+      "computer",
+      "dashboard"
+    ],
+    "always_listening": false,
+    "push_to_talk": true,
+    "voice_activation_key": "space"
+  },
+  "privacy": {
+    "local_processing": true,
+    "cloud_fallback": false,
+    "audio_logging": false,
+    "command_history": true
+  }
+}

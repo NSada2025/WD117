@@ -1,0 +1,44 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEO Dashboard - Demo</title>
+</head>
+<body>
+    <div id="ceo-dashboard"></div>
+    
+    <script src="../src/mobile/CEOMobileInterface.js"></script>
+    <script>
+        // CEO モバイルインターフェース初期化
+        const ceoInterface = new CEOMobileInterface();
+        
+        // デモ用の自動応答設定
+        const originalSendToManager = ceoInterface.sendToManager;
+        ceoInterface.sendToManager = function(instruction) {
+            console.log('Demo: 指示を送信:', instruction);
+            
+            // 2秒後にデモ応答
+            setTimeout(() => {
+                const responses = [
+                    '指示を受信しました。dev1とdev2にタスクを割り当てています。',
+                    'データ分析を開始しました。予想完了時間は3時間です。',
+                    '緊急対応チームを編成しました。状況を監視中です。'
+                ];
+                
+                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                this.receiveFromManager({
+                    type: 'response',
+                    message: randomResponse,
+                    timestamp: new Date().toISOString()
+                });
+            }, 2000);
+        };
+        
+        console.log('CEO Dashboard デモ版が準備完了しました');
+        console.log('📱 モバイル画面でお試しください');
+    </script>
+</body>
+</html>
+  

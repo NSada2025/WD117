@@ -1,0 +1,379 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Stability Monitor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
+            color: #ffffff;
+            padding: 20px;
+        }
+        
+        .stability-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .stability-title {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: #4CAF50;
+        }
+        
+        .alert-banner {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid #f44336;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .alert-banner.active {
+            display: block;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .metric-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .metric-title {
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        
+        .metric-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4CAF50;
+        }
+        
+        .metric-status.warning {
+            background: #FF9800;
+        }
+        
+        .metric-status.critical {
+            background: #f44336;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .metric-chart {
+            height: 100px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chart-line {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #4CAF50;
+            transform-origin: left;
+        }
+        
+        .incident-log {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .incident-item {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .incident-item:last-child {
+            border-bottom: none;
+        }
+        
+        .incident-severity {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        
+        .severity-low {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+        }
+        
+        .severity-medium {
+            background: rgba(255, 152, 0, 0.2);
+            color: #FF9800;
+        }
+        
+        .severity-high {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+        }
+        
+        .action-buttons {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-button {
+            background: #4CAF50;
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        .action-button.emergency {
+            background: #f44336;
+        }
+        
+        /* Auto-compact indicator */
+        .auto-compact-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(33, 150, 243, 0.9);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .compact-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4CAF50;
+            animation: blink 2s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body>
+    <div class="auto-compact-status">
+        <div class="compact-indicator"></div>
+        Auto-Compact: ACTIVE
+    </div>
+    
+    <div class="stability-header">
+        <h1 class="stability-title">🛡️ System Stability Monitor</h1>
+        <p>Real-time monitoring with incident prevention</p>
+    </div>
+    
+    <div class="alert-banner" id="alertBanner">
+        <strong>⚠️ System Alert:</strong> <span id="alertMessage"></span>
+    </div>
+    
+    <div class="metrics-grid">
+        <!-- CPU Usage -->
+        <div class="metric-card">
+            <div class="metric-header">
+                <span class="metric-title">CPU Usage</span>
+                <div class="metric-status" id="cpuStatus"></div>
+            </div>
+            <div class="metric-value" id="cpuValue">45%</div>
+            <div class="metric-chart">
+                <div class="chart-line" style="width: 45%;"></div>
+            </div>
+        </div>
+        
+        <!-- Memory Usage -->
+        <div class="metric-card">
+            <div class="metric-header">
+                <span class="metric-title">Memory Usage</span>
+                <div class="metric-status" id="memoryStatus"></div>
+            </div>
+            <div class="metric-value" id="memoryValue">65%</div>
+            <div class="metric-chart">
+                <div class="chart-line" style="width: 65%;"></div>
+            </div>
+        </div>
+        
+        <!-- Response Time -->
+        <div class="metric-card">
+            <div class="metric-header">
+                <span class="metric-title">Response Time</span>
+                <div class="metric-status" id="responseStatus"></div>
+            </div>
+            <div class="metric-value" id="responseValue">0.3s</div>
+            <div class="metric-chart">
+                <div class="chart-line" style="width: 15%;"></div>
+            </div>
+        </div>
+        
+        <!-- Error Rate -->
+        <div class="metric-card">
+            <div class="metric-header">
+                <span class="metric-title">Error Rate</span>
+                <div class="metric-status" id="errorStatus"></div>
+            </div>
+            <div class="metric-value" id="errorValue">0%</div>
+            <div class="metric-chart">
+                <div class="chart-line" style="width: 0%;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Incident Log -->
+    <div class="incident-log">
+        <h2>📋 Incident Log</h2>
+        <div id="incidentList">
+            <div class="incident-item">
+                <span class="incident-severity severity-medium">MEDIUM</span>
+                <strong>dev3 screen auto-compact</strong> - Resolved automatically
+                <div style="font-size: 0.9em; opacity: 0.7; margin-top: 5px;">
+                    2025-06-30 11:58 - Auto-compact priority elevated to HIGH
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="action-buttons">
+        <button class="action-button" onclick="runDiagnostics()">
+            🔍 Run Diagnostics
+        </button>
+        <button class="action-button emergency" onclick="emergencyCompact()">
+            🚨 Force Compact
+        </button>
+    </div>
+    
+    <script>
+        // Simulated real-time monitoring
+        function updateMetrics() {
+            // Simulate metric updates
+            const metrics = {
+                cpu: Math.floor(Math.random() * 30 + 40),
+                memory: Math.floor(Math.random() * 20 + 60),
+                response: (Math.random() * 0.5 + 0.2).toFixed(1),
+                error: Math.floor(Math.random() * 2)
+            };
+            
+            // Update CPU
+            document.getElementById('cpuValue').textContent = metrics.cpu + '%';
+            updateStatus('cpuStatus', metrics.cpu, 70, 90);
+            
+            // Update Memory
+            document.getElementById('memoryValue').textContent = metrics.memory + '%';
+            updateStatus('memoryStatus', metrics.memory, 75, 85);
+            
+            // Update Response Time
+            document.getElementById('responseValue').textContent = metrics.response + 's';
+            updateStatus('responseStatus', metrics.response * 1000, 1000, 2000);
+            
+            // Update Error Rate
+            document.getElementById('errorValue').textContent = metrics.error + '%';
+            updateStatus('errorStatus', metrics.error, 3, 5);
+            
+            // Check for alerts
+            checkAlerts(metrics);
+        }
+        
+        function updateStatus(elementId, value, warningThreshold, criticalThreshold) {
+            const element = document.getElementById(elementId);
+            element.classList.remove('warning', 'critical');
+            
+            if (value >= criticalThreshold) {
+                element.classList.add('critical');
+            } else if (value >= warningThreshold) {
+                element.classList.add('warning');
+            }
+        }
+        
+        function checkAlerts(metrics) {
+            const alertBanner = document.getElementById('alertBanner');
+            const alertMessage = document.getElementById('alertMessage');
+            
+            if (metrics.memory >= 85) {
+                alertBanner.classList.add('active');
+                alertMessage.textContent = 'High memory usage detected. Auto-compact may trigger.';
+            } else {
+                alertBanner.classList.remove('active');
+            }
+        }
+        
+        function runDiagnostics() {
+            alert('Running comprehensive system diagnostics...');
+            // Add diagnostic logic here
+        }
+        
+        function emergencyCompact() {
+            if (confirm('Force system compact? This may temporarily affect performance.')) {
+                alert('Emergency compact initiated. Please wait...');
+                // Add compact logic here
+            }
+        }
+        
+        // Update metrics every 5 seconds
+        setInterval(updateMetrics, 5000);
+        updateMetrics(); // Initial update
+        
+        // Auto-refresh page every 5 minutes
+        setTimeout(() => {
+            location.reload();
+        }, 300000);
+    </script>
+</body>
+</html>
+        

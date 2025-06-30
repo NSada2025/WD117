@@ -1,0 +1,53 @@
+{
+  "version": "1.0",
+  "created": "2025-06-30T12:16:56.028115",
+  "strategies": {
+    "dev1": {
+      "summarization_level": "balanced",
+      "techniques": [
+        "Statistical aggregation",
+        "Pattern highlighting",
+        "Key findings extraction"
+      ],
+      "output_rules": {
+        "max_list_items": 10,
+        "table_row_limit": 20,
+        "description_max_length": 500
+      }
+    },
+    "dev2": {
+      "summarization_level": "technical",
+      "techniques": [
+        "Code snippet truncation",
+        "Implementation highlights",
+        "Performance metrics focus"
+      ],
+      "output_rules": {
+        "max_code_lines": 50,
+        "log_condensation": true,
+        "error_summary_only": true
+      }
+    },
+    "dev3": {
+      "summarization_level": "aggressive",
+      "techniques": [
+        "Executive summary priority",
+        "Visual representation preference",
+        "Progressive disclosure",
+        "Chunked output delivery"
+      ],
+      "output_rules": {
+        "max_report_length": 1000,
+        "use_bullet_points": true,
+        "defer_details": true,
+        "visual_over_text": true
+      }
+    }
+  },
+  "auto_compact_prevention": {
+    "buffer_threshold": 0.85,
+    "preemptive_summary": true,
+    "output_chunking": true,
+    "real_time_monitoring": true
+  }
+}
