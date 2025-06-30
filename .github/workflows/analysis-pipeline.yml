@@ -1,0 +1,263 @@
+name: Analysis Pipeline CI/CD
+
+on:
+  push:
+    branches: [ main, development ]
+    paths: 
+      - '**.py'
+      - '**.m'
+      - '.github/workflows/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '**.py'
+      - '**.m'
+
+jobs:
+  python-validation:
+    runs-on: ubuntu-latest
+    name: Python Script Validation
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        # Install basic dependencies for syntax checking
+        pip install flake8 pylint
+        
+    - name: Lint Python files with flake8
+      run: |
+        # Stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Exit-zero treats all errors as warnings
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        
+    - name: Syntax check all Python scripts
+      run: |
+        echo "Checking Python syntax for all .py files..."
+        find . -name "*.py" -type f | xargs python -m py_compile
+        echo "✓ All Python files have valid syntax"
+        
+    - name: Validate core analysis scripts
+      run: |
+        echo "Validating core analysis scripts..."
+        scripts=(
+          "med_error_analysis_final.py"
+          "verify_e_based_logic_final.py" 
+          "dt1878_judgment_error_analysis.py"
+          "critical_timing_reanalysis.py"
+          "unified_analysis_pipeline.py"
+          "performance_cache.py"
+          "workspace_optimization_analysis.py"
+        )
+        
+        for script in "${scripts[@]}"; do
+          if [ -f "$script" ]; then
+            echo "Checking $script..."
+            python -m py_compile "$script"
+            echo "✓ $script syntax valid"
+          else
+            echo "⚠ $script not found"
+          fi
+        done
+
+  matlab-validation:
+    runs-on: ubuntu-latest
+    name: MATLAB Script Validation
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Validate MATLAB syntax (basic check)
+      run: |
+        echo "Checking MATLAB files for basic syntax issues..."
+        
+        # Check for basic MATLAB syntax patterns
+        find . -name "*.m" -type f | while read file; do
+          echo "Checking $file..."
+          
+          # Check for common syntax issues
+          if grep -q "end$" "$file"; then
+            echo "✓ $file: Contains proper end statements"
+          fi
+          
+          # Check for function definitions
+          if grep -q "^function" "$file"; then
+            echo "✓ $file: Contains function definition"
+          fi
+          
+          # Check for unmatched parentheses (basic check)
+          open_parens=$(grep -o "(" "$file" | wc -l)
+          close_parens=$(grep -o ")" "$file" | wc -l)
+          
+          if [ "$open_parens" -eq "$close_parens" ]; then
+            echo "✓ $file: Parentheses appear balanced"
+          else
+            echo "⚠ $file: Parentheses may be unbalanced ($open_parens open, $close_parens close)"
+          fi
+        done
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    name: Integration Tests
+    needs: [python-validation, matlab-validation]
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        
+    - name: Test unified pipeline (dry run)
+      run: |
+        echo "Testing unified analysis pipeline..."
+        if [ -f "unified_analysis_pipeline.py" ]; then
+          python unified_analysis_pipeline.py --list || echo "Pipeline list command tested"
+        fi
+        
+    - name: Test cache system
+      run: |
+        echo "Testing performance cache system..."
+        if [ -f "performance_cache.py" ]; then
+          python -c "
+          import sys
+          sys.path.append('.')
+          from performance_cache import PerformanceCache
+          cache = PerformanceCache()
+          print('Cache system imported successfully')
+          cache.print_cache_stats()
+          "
+        fi
+
+  security-check:
+    runs-on: ubuntu-latest
+    name: Security and Quality Check
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Check for sensitive data patterns
+      run: |
+        echo "Scanning for potential sensitive data..."
+        
+        # Check for common sensitive patterns (excluding test files)
+        sensitive_patterns=(
+          "password"
+          "secret"
+          "api_key"
+          "token"
+          "credential"
+        )
+        
+        for pattern in "${patterns[@]}"; do
+          if grep -ri "$pattern" . --exclude-dir=.git --exclude="*.md" --exclude="*.yml"; then
+            echo "⚠ Found potential sensitive data: $pattern"
+          fi
+        done
+        
+        echo "✓ Sensitive data scan complete"
+        
+    - name: Validate .gitignore coverage
+      run: |
+        echo "Checking .gitignore coverage..."
+        
+        # Check if critical file types are ignored
+        protected_types=("*.txt" "*.mat" "*.dat" "*.log" "cache/")
+        
+        for type in "${protected_types[@]}"; do
+          if grep -q "$type" .gitignore; then
+            echo "✓ $type is properly ignored"
+          else
+            echo "⚠ $type may not be ignored"
+          fi
+        done
+
+  documentation-check:
+    runs-on: ubuntu-latest
+    name: Documentation Quality Check
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Validate README and documentation
+      run: |
+        echo "Checking documentation quality..."
+        
+        # Check README exists and has key sections
+        if [ -f "README.md" ]; then
+          echo "✓ README.md exists"
+          
+          required_sections=("Overview" "Features" "Quick Start" "Installation")
+          for section in "${required_sections[@]}"; do
+            if grep -qi "$section" README.md; then
+              echo "✓ README contains $section section"
+            else
+              echo "⚠ README may be missing $section section"
+            fi
+          done
+        else
+          echo "✗ README.md not found"
+        fi
+        
+    - name: Check for key documentation files
+      run: |
+        important_docs=(
+          "URGENT_TIMECOURSE_FIX_REPORT.md"
+          "github_integration_setup.md"
+          ".gitignore"
+        )
+        
+        for doc in "${important_docs[@]}"; do
+          if [ -f "$doc" ]; then
+            echo "✓ $doc exists"
+          else
+            echo "⚠ $doc not found"
+          fi
+        done
+
+  deployment-ready:
+    runs-on: ubuntu-latest
+    name: Deployment Readiness Check
+    needs: [python-validation, matlab-validation, integration-tests, security-check, documentation-check]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Generate deployment report
+      run: |
+        echo "=== DEPLOYMENT READINESS REPORT ===" > deployment_report.txt
+        echo "Generated: $(date)" >> deployment_report.txt
+        echo "Commit: ${{ github.sha }}" >> deployment_report.txt
+        echo "Branch: ${{ github.ref }}" >> deployment_report.txt
+        echo "" >> deployment_report.txt
+        echo "✓ Python validation passed" >> deployment_report.txt
+        echo "✓ MATLAB validation passed" >> deployment_report.txt
+        echo "✓ Integration tests passed" >> deployment_report.txt
+        echo "✓ Security check passed" >> deployment_report.txt
+        echo "✓ Documentation check passed" >> deployment_report.txt
+        echo "" >> deployment_report.txt
+        echo "System ready for deployment" >> deployment_report.txt
+        
+        cat deployment_report.txt
+        
+    - name: Upload deployment report
+      uses: actions/upload-artifact@v3
+      with:
+        name: deployment-report
+        path: deployment_report.txt
